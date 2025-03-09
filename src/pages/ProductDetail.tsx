@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, QrCode, Share2, Download, Edit, Trash } from "lucide-react";
-import { useToast } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
 
 // Mock product data (in a real app this would come from an API)

@@ -31,7 +31,7 @@ import {
   Download
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
 
 // Mock data

@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
-import { useToast } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 
 interface UploadedImage {
   id: string;

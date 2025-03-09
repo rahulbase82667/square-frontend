@@ -14,7 +14,7 @@ import {
   Settings,
   AlertCircle
 } from "lucide-react";
-import { useToast } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Dialog,
   DialogContent,

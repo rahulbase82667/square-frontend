@@ -13,7 +13,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Upload, X, Plus, Sparkles, ExternalLink } from "lucide-react";
-import { useToast } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 import IntegrationPlatformSelector from "@/components/IntegrationPlatformSelector";
 import ImageUploader from "@/components/ImageUploader";
 
