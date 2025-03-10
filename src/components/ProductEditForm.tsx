@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ import { useToast } from "@/hooks/use-toast";
 import IntegrationPlatformSelector from "@/components/IntegrationPlatformSelector";
 import ImageUploader from "@/components/ImageUploader";
 import { getGBPToUSDRate, formatGBP, formatUSD } from "@/utils/currencyUtils";
-import { syncProductToSquare } from "@/utils/squareApi";
 
 interface ProductData {
   id: string;
@@ -53,7 +51,6 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
   const [description, setDescription] = useState(product.description);
   const [category, setCategory] = useState(product.category);
   const [images] = useState(product.images);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     const updateUSDPrice = async () => {
@@ -66,7 +63,7 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
     updateUSDPrice();
   }, [priceGBP]);
   
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !sku || !priceGBP || !category) {
@@ -100,39 +97,6 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
       category,
       images,
     };
-    
-    // Sync with Square if Square is selected
-    if (selectedPlatforms.includes('square')) {
-      setIsSyncing(true);
-      toast({
-        title: "Syncing with Square",
-        description: "Updating inventory in Square...",
-      });
-      
-      try {
-        await syncProductToSquare({
-          name,
-          description,
-          price: parseFloat(priceGBP),
-          sku,
-          inventory: parseInt(inventory)
-        });
-        
-        toast({
-          title: "Synced with Square",
-          description: "Product information was successfully updated in Square.",
-        });
-      } catch (error) {
-        console.error("Failed to sync with Square:", error);
-        toast({
-          title: "Sync Error",
-          description: "Failed to sync with Square. Product saved locally only.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsSyncing(false);
-      }
-    }
     
     onSave(updatedProduct);
   };
@@ -270,8 +234,8 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSyncing}>
-          {isSyncing ? "Syncing with platforms..." : "Save Changes"}
+        <Button type="submit">
+          Save Changes
         </Button>
       </div>
     </form>
