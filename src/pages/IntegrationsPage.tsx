@@ -1,13 +1,9 @@
-
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import PlatformCard, { Platform } from "@/components/PlatformCard";
 import { checkSquareConnection } from "@/utils/squareApi";
+import { Platform } from "@/components/PlatformCard";
+import IntegrationStatusBanner from "@/components/integrations/IntegrationStatusBanner";
+import PlatformTabs from "@/components/integrations/PlatformTabs";
 
 const initialPlatforms: Platform[] = [
   { 
@@ -119,9 +115,6 @@ const IntegrationsPage = () => {
     verifySquareConnection();
   }, [toast]);
   
-  const connectedPlatforms = platforms.filter(p => p.status === 'connected');
-  const notConnectedPlatforms = platforms.filter(p => p.status === 'not_connected');
-  
   const handleDisconnect = (platformId: string) => {
     setPlatforms(prev => 
       prev.map(platform => 
@@ -166,120 +159,24 @@ const IntegrationsPage = () => {
       )
     );
   };
-  
-  const displayPlatforms = activeTab === 'all' 
-    ? platforms 
-    : activeTab === 'connected' 
-      ? connectedPlatforms 
-      : notConnectedPlatforms;
-  
+
   return (
     <div className="space-y-6">
-      {isLoading && (
-        <div className="bg-blue-50 p-4 rounded-md border border-blue-200 mb-4">
-          <p className="text-blue-700 text-sm">Verifying connection status with platforms...</p>
-        </div>
-      )}
+      <IntegrationStatusBanner isLoading={isLoading} />
       
       <div>
         <h1 className="text-2xl font-bold">Platform Integrations</h1>
         <p className="text-muted-foreground">Connect your product listings to multiple e-commerce platforms.</p>
       </div>
       
-      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex justify-between items-center">
-          <TabsList>
-            <TabsTrigger value="all">
-              All Platforms
-              <Badge variant="secondary" className="ml-2">{platforms.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="connected">
-              Connected
-              <Badge variant="secondary" className="ml-2">{connectedPlatforms.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="not_connected">
-              Available
-              <Badge variant="secondary" className="ml-2">{notConnectedPlatforms.length}</Badge>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <TabsContent value="all" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayPlatforms.map(platform => (
-              <PlatformCard 
-                key={platform.id}
-                platform={platform}
-                onConnect={handleConnect}
-                onDisconnect={handleDisconnect}
-                onSync={handleSync}
-              />
-            ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="connected" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayPlatforms.map(platform => (
-              <PlatformCard 
-                key={platform.id}
-                platform={platform}
-                onConnect={handleConnect}
-                onDisconnect={handleDisconnect}
-                onSync={handleSync}
-              />
-            ))}
-            
-            {displayPlatforms.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">No Connected Platforms</h3>
-                <p className="text-muted-foreground mt-2 max-w-md">
-                  You haven't connected any platforms yet. Connect a platform to start listing your products.
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => setActiveTab('not_connected')}
-                >
-                  View Available Platforms
-                </Button>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="not_connected" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayPlatforms.map(platform => (
-              <PlatformCard 
-                key={platform.id}
-                platform={platform}
-                onConnect={handleConnect}
-                onDisconnect={handleDisconnect}
-                onSync={handleSync}
-              />
-            ))}
-            
-            {displayPlatforms.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                <Check className="h-12 w-12 text-green-500 mb-4" />
-                <h3 className="text-lg font-medium">All Platforms Connected</h3>
-                <p className="text-muted-foreground mt-2 max-w-md">
-                  You've connected all available platforms. Great job!
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => setActiveTab('connected')}
-                >
-                  View Connected Platforms
-                </Button>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+      <PlatformTabs
+        platforms={platforms}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onConnect={handleConnect}
+        onDisconnect={handleDisconnect}
+        onSync={handleSync}
+      />
     </div>
   );
 };
