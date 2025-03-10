@@ -1,33 +1,59 @@
-
 /**
  * Square API utilities for inventory synchronization
  */
 
-// Square API credentials
-const SQUARE_APP_ID = 'sq0idp-k179M9PgyycfIe79od8WTQ';
-const SQUARE_API_SECRET = 'EAAAl7wuu6ayAloKJ0uxnDTt6QX2-Sa8W7tmGSuMcADB09D4CNQgyrgBa19QG5hC';
+// Square API configuration
 const SQUARE_API_URL = 'https://connect.squareup.com/v2';
-const SQUARE_LOCATION_ID = 'L8M3QFES7YACD'; // Default location ID - this would typically be configurable
+const SQUARE_LOCATION_ID = 'L8M3QFES7YACD';
 
-// Headers for Square API requests
+// Headers for Square API requests with proper configuration
 const headers = {
-  'Square-Version': '2023-09-25',
-  'Authorization': `Bearer ${SQUARE_API_SECRET}`,
+  'Square-Version': '2024-02-22',
+  'Authorization': `Bearer ${process.env.VITE_SQUARE_API_SECRET || 'EAAAl7wuu6ayAloKJ0uxnDTt6QX2-Sa8W7tmGSuMcADB09D4CNQgyrgBa19QG5hC'}`,
   'Content-Type': 'application/json'
 };
 
 /**
- * Get inventory counts for all items
+ * Check if the Square integration is working
  */
-export const getInventory = async (): Promise<any> => {
+export const checkSquareConnection = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${SQUARE_API_URL}/inventory/counts`, {
+    const response = await fetch(`${SQUARE_API_URL}/locations`, {
       method: 'GET',
       headers
     });
 
     if (!response.ok) {
-      throw new Error(`Square API error: ${response.status}`);
+      const errorData = await response.json();
+      console.error('Square API Error:', errorData);
+      return false;
+    }
+
+    const data = await response.json();
+    return data.locations && data.locations.length > 0;
+  } catch (error) {
+    console.error('Failed to connect to Square API:', error);
+    return false;
+  }
+};
+
+/**
+ * Get inventory counts for all items
+ */
+export const getInventory = async () => {
+  try {
+    const response = await fetch(`${SQUARE_API_URL}/inventory/counts/batch`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        location_ids: [SQUARE_LOCATION_ID],
+        updated_after: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Square API error: ${JSON.stringify(errorData)}`);
     }
 
     return await response.json();
@@ -175,62 +201,107 @@ export const createCatalogItem = async (
 };
 
 /**
- * Check if the Square integration is working
- */
-export const checkSquareConnection = async (): Promise<boolean> => {
-  try {
-    const response = await fetch(`${SQUARE_API_URL}/locations`, {
-      method: 'GET',
-      headers
-    });
-    
-    return response.ok;
-  } catch (error) {
-    console.error('Failed to connect to Square API:', error);
-    return false;
-  }
-};
-
-/**
  * Sync a product to Square
  */
 export const syncProductToSquare = async (product: any): Promise<any> => {
   try {
-    // Check if product already exists in Square by SKU
-    const catalogResponse = await fetch(`${SQUARE_API_URL}/catalog/search`, {
+    // First, check if product exists by SKU
+    const searchResponse = await fetch(`${SQUARE_API_URL}/catalog/search-catalog-items`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        query: {
-          exact_query: {
-            attribute_name: 'sku',
-            attribute_value: product.sku
-          }
-        }
+        text_filter: product.sku,
+        location_ids: [SQUARE_LOCATION_ID]
       })
     });
+
+    if (!searchResponse.ok) {
+      const errorData = await searchResponse.json();
+      throw new Error(`Square API search error: ${JSON.stringify(errorData)}`);
+    }
+
+    const searchData = await searchResponse.json();
     
-    const catalogData = await catalogResponse.json();
-    
-    if (catalogData.objects && catalogData.objects.length > 0) {
+    if (searchData.items && searchData.items.length > 0) {
       // Product exists, update it
-      const squareItem = catalogData.objects[0];
-      const variationId = squareItem.item_data.variations[0].id;
-      
-      // Update inventory for the existing product
-      return await updateInventory(variationId, product.inventory);
+      const itemId = searchData.items[0].id;
+      const updateResponse = await fetch(`${SQUARE_API_URL}/catalog/object/${itemId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+          idempotency_key: `update_${Date.now()}`,
+          object: {
+            type: 'ITEM',
+            id: itemId,
+            item_data: {
+              name: product.name,
+              description: product.description,
+              variations: [
+                {
+                  type: 'ITEM_VARIATION',
+                  id: `#${itemId}_variation`,
+                  item_variation_data: {
+                    item_id: itemId,
+                    name: 'Regular',
+                    sku: product.sku,
+                    pricing_type: 'FIXED_PRICING',
+                    price_money: {
+                      amount: Math.round(product.price * 100),
+                      currency: 'GBP'
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        })
+      });
+
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(`Square API update error: ${JSON.stringify(errorData)}`);
+      }
+
+      return await updateResponse.json();
     } else {
       // Product doesn't exist, create it
-      const newItem = await createCatalogItem(
-        product.name,
-        product.description,
-        product.price,
-        product.sku
-      );
-      
-      // Set initial inventory after creation
-      const variationId = newItem.catalog_object.item_data.variations[0].id;
-      return await updateInventory(variationId, product.inventory);
+      const createResponse = await fetch(`${SQUARE_API_URL}/catalog/object`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          idempotency_key: `create_${Date.now()}`,
+          object: {
+            type: 'ITEM',
+            id: `#${Date.now()}`,
+            item_data: {
+              name: product.name,
+              description: product.description,
+              variations: [
+                {
+                  type: 'ITEM_VARIATION',
+                  id: `#var_${Date.now()}`,
+                  item_variation_data: {
+                    name: 'Regular',
+                    sku: product.sku,
+                    pricing_type: 'FIXED_PRICING',
+                    price_money: {
+                      amount: Math.round(product.price * 100),
+                      currency: 'GBP'
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        })
+      });
+
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json();
+        throw new Error(`Square API create error: ${JSON.stringify(errorData)}`);
+      }
+
+      return await createResponse.json();
     }
   } catch (error) {
     console.error('Failed to sync product to Square:', error);
