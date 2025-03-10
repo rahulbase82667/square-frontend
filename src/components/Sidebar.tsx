@@ -9,7 +9,7 @@ import {
   SidebarHeader 
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Upload, Share2, Package, Settings } from "lucide-react";
+import { LayoutDashboard, Upload, Share2, Package } from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
