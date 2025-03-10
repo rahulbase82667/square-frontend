@@ -32,7 +32,7 @@ const Sidebar = () => {
           <div className="bg-brand-blue text-white p-1 rounded">
             <Share2 size={20} />
           </div>
-          <span className="font-bold text-xl">EasyHub</span>
+          <span className="font-bold text-xl">Reginald</span>
         </div>
         <SidebarTrigger className="ml-auto md:hidden" />
       </SidebarHeader>
