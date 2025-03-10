@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, QrCode, Share2, Download, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
+import ProductEditForm from "@/components/ProductEditForm";
 
 // Mock product data (in a real app this would come from an API)
 const mockProductData = {
@@ -38,7 +38,8 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [product] = useState(mockProductData);
+  const [product, setProduct] = useState(mockProductData);
+  const [isEditing, setIsEditing] = useState(false);
   
   const handleDownloadQR = () => {
     toast({
@@ -46,6 +47,62 @@ const ProductDetail = () => {
       description: "The QR code has been saved to your downloads folder."
     });
   };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleSaveEdit = (updatedProduct: typeof mockProductData) => {
+    // In a real app, this would be an API call
+    setProduct(updatedProduct);
+    setIsEditing(false);
+    
+    // Show success toast with information about platform updates
+    toast({
+      title: "Product Updated",
+      description: `Changes have been pushed to ${updatedProduct.platforms.length} platforms.`,
+    });
+    
+    // Show individual platform update notifications
+    updatedProduct.platforms.forEach((platform, index) => {
+      setTimeout(() => {
+        toast({
+          title: `Updated on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`,
+          description: "Product information successfully synced.",
+        });
+      }, (index + 1) * 1000); // Stagger notifications
+    });
+  };
+  
+  if (isEditing) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleCancelEdit}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Edit Product</h1>
+            <p className="text-sm text-muted-foreground">Update product information and push to platforms</p>
+          </div>
+        </div>
+        
+        <ProductEditForm 
+          product={product} 
+          onSave={handleSaveEdit} 
+          onCancel={handleCancelEdit} 
+        />
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -80,7 +137,7 @@ const ProductDetail = () => {
             <Share2 className="h-4 w-4" />
             Share
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleEdit}>
             <Edit className="h-4 w-4" />
             Edit
           </Button>
@@ -91,6 +148,7 @@ const ProductDetail = () => {
         </div>
       </div>
       
+      {/* The rest of the product detail view remains unchanged */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
