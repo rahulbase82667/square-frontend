@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import Dashboard from "./pages/Dashboard";
 import ProductUpload from "./pages/ProductUpload";
 import IntegrationsPage from "./pages/IntegrationsPage";
@@ -16,9 +16,12 @@ import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
+const ALLOWED_DOMAINS = ["adalondontrading.store", "milogistix.uk"];
+
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
   
   if (!isLoaded) {
     return <div className="h-screen w-full flex items-center justify-center">Loading...</div>;
@@ -26,6 +29,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (!isSignedIn) {
     return <Navigate to="/login" />;
+  }
+  
+  // Check if user's email domain is allowed
+  const email = user?.emailAddresses?.[0]?.emailAddress;
+  if (email) {
+    const domain = email.split('@')[1];
+    if (!ALLOWED_DOMAINS.includes(domain)) {
+      // Redirect unauthorized users to login
+      return <Navigate to="/login" />;
+    }
   }
   
   return <>{children}</>;
