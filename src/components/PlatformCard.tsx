@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Settings, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { PlatformConnector } from './PlatformConnector';
+import { PlatformOAuthConnector } from './PlatformOAuthConnector';
 import type { Platform } from '../types/platform';
 
 interface PlatformCardProps {
@@ -84,7 +85,7 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
             </Button>
           </>
         ) : (
-          <PlatformConnector
+          <PlatformOAuthConnector
             platform={platform}
             onConnect={onConnect}
           />

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +16,11 @@ const availablePlatforms: Platform[] = [
     icon: '🏪',
     status: 'connected',
     lastSync: '2 hours ago',
-    requiredCredentials: ['apiKey', 'clientSecret']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://www.etsy.com/oauth/connect',
+    tokenUrl: 'https://api.etsy.com/v3/public/oauth/token',
+    scopes: ['listings_r', 'listings_w', 'transactions_r'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
   { 
     id: 'tiktok',
@@ -24,7 +29,11 @@ const availablePlatforms: Platform[] = [
     icon: '📱',
     status: 'connected',
     lastSync: '1 day ago',
-    requiredCredentials: ['accessToken', 'clientId', 'clientSecret']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://auth.tiktok-shops.com/oauth/authorize',
+    tokenUrl: 'https://auth.tiktok-shops.com/api/v2/token',
+    scopes: ['product.read', 'product.write', 'order.read'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
   { 
     id: 'facebook',
@@ -33,7 +42,11 @@ const availablePlatforms: Platform[] = [
     icon: '👥',
     status: 'connected',
     lastSync: '3 hours ago',
-    requiredCredentials: ['accessToken', 'clientId']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
+    tokenUrl: 'https://graph.facebook.com/v18.0/oauth/access_token',
+    scopes: ['catalog_management', 'business_management'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
   { 
     id: 'square',
@@ -42,7 +55,11 @@ const availablePlatforms: Platform[] = [
     icon: '🔲',
     status: 'connected',
     lastSync: '5 hours ago',
-    requiredCredentials: ['apiKey', 'accessToken']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://connect.squareupsandbox.com/oauth2/authorize',
+    tokenUrl: 'https://connect.squareupsandbox.com/oauth2/token',
+    scopes: ['ITEMS_READ', 'ITEMS_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
   { 
     id: 'instagram',
@@ -50,7 +67,11 @@ const availablePlatforms: Platform[] = [
     description: 'Enable shopping features on your Instagram business profile.',
     icon: '📸',
     status: 'not_connected',
-    requiredCredentials: ['accessToken', 'clientId']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://api.instagram.com/oauth/authorize',
+    tokenUrl: 'https://api.instagram.com/oauth/access_token',
+    scopes: ['user_profile', 'user_media'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
   { 
     id: 'amazon',
@@ -58,7 +79,11 @@ const availablePlatforms: Platform[] = [
     description: 'List products on Amazon\'s marketplace for global reach.',
     icon: '📦',
     status: 'not_connected',
-    requiredCredentials: ['apiKey', 'clientSecret', 'accessToken']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://sellercentral.amazon.com/apps/authorize/consent',
+    tokenUrl: 'https://api.amazon.com/auth/o2/token',
+    scopes: ['product_listing', 'order_read'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
   { 
     id: 'shopify',
@@ -66,7 +91,11 @@ const availablePlatforms: Platform[] = [
     description: 'Sync with your Shopify store to manage inventory across channels.',
     icon: '🛒',
     status: 'not_connected',
-    requiredCredentials: ['apiKey', 'apiSecret']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://accounts.shopify.com/oauth/authorize',
+    tokenUrl: 'https://accounts.shopify.com/oauth/token',
+    scopes: ['read_products', 'write_products', 'read_orders'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
   { 
     id: 'ebay',
@@ -74,7 +103,11 @@ const availablePlatforms: Platform[] = [
     description: 'List products on eBay\'s auction and fixed-price marketplace.',
     icon: '🏷️',
     status: 'not_connected',
-    requiredCredentials: ['clientId', 'clientSecret']
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    authUrl: 'https://auth.ebay.com/oauth2/authorize',
+    tokenUrl: 'https://api.ebay.com/identity/v1/oauth2/token',
+    scopes: ['https://api.ebay.com/oauth/api_scope/sell.inventory', 'https://api.ebay.com/oauth/api_scope/sell.account'],
+    redirectUri: `${window.location.origin}/oauth-callback`
   },
 ];
 

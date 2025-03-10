@@ -13,6 +13,7 @@ import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import OAuthCallback from "./components/OAuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login/*" element={<Login />} />
+            <Route path="/oauth-callback" element={<OAuthCallback />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Layout />

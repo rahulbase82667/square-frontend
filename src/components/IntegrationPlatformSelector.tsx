@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 interface IntegrationPlatform {
   id: string;
@@ -16,19 +17,30 @@ interface IntegrationPlatformSelectorProps {
   setSelectedPlatforms: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-// Mock data for available platforms
-const availablePlatforms: IntegrationPlatform[] = [
-  { id: 'etsy', name: 'Etsy', icon: '🏪', connected: true },
-  { id: 'tiktok', name: 'TikTok Shop', icon: '📱', connected: true },
-  { id: 'facebook', name: 'Facebook Marketplace', icon: '👥', connected: true },
-  { id: 'square', name: 'Square', icon: '🔲', connected: true },
-  { id: 'instagram', name: 'Instagram Shop', icon: '📸', connected: false },
-];
-
 const IntegrationPlatformSelector = ({
   selectedPlatforms,
   setSelectedPlatforms
 }: IntegrationPlatformSelectorProps) => {
+  const [availablePlatforms, setAvailablePlatforms] = useState<IntegrationPlatform[]>([
+    { id: 'etsy', name: 'Etsy', icon: '🏪', connected: false },
+    { id: 'tiktok', name: 'TikTok Shop', icon: '📱', connected: false },
+    { id: 'facebook', name: 'Facebook Marketplace', icon: '👥', connected: false },
+    { id: 'square', name: 'Square', icon: '🔲', connected: false },
+    { id: 'instagram', name: 'Instagram Shop', icon: '📸', connected: false },
+  ]);
+  
+  // Check localStorage for connected platforms
+  useEffect(() => {
+    const updatedPlatforms = availablePlatforms.map(platform => {
+      const credentials = localStorage.getItem(`${platform.id}_credentials`);
+      return {
+        ...platform,
+        connected: !!credentials
+      };
+    });
+    
+    setAvailablePlatforms(updatedPlatforms);
+  }, []);
   
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms(prev => {
