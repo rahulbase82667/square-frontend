@@ -21,7 +21,7 @@ const Login = () => {
         try {
           const user = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
             headers: {
-              'Authorization': `Bearer ${import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}`,
+              'Authorization': `Bearer ${import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_ZXBpYy1zYXdmbHktMTAuY2xlcmsuYWNjb3VudHMuZGV2JA"}`,
               'Content-Type': 'application/json',
             }
           }).then(res => res.json());
@@ -76,7 +76,6 @@ const Login = () => {
             }}
             path="/login"
             routing="path"
-            signUpUrl="/sign-up"
             redirectUrl="/"
           />
         </div>

@@ -16,7 +16,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ClerkProvider 
       publishableKey={PUBLISHABLE_KEY}
-      allowedRedirectOrigins={["https://epic-sawfly-10.clerk.accounts.dev"]}
+      allowedRedirectOrigins={[
+        "https://epic-sawfly-10.clerk.accounts.dev",
+        "https://ecom-easyhub.lovable.app"
+      ]}
     >
       <App />
     </ClerkProvider>
