@@ -1,42 +1,15 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
-import { 
-  Check, 
-  X, 
-  Plus, 
-  RefreshCw, 
-  ExternalLink, 
-  Settings,
-  AlertCircle
-} from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import PlatformCard, { Platform } from "@/components/PlatformCard";
+import { checkSquareConnection } from "@/utils/squareApi";
 
-interface Platform {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  status: 'connected' | 'not_connected';
-  lastSync?: string;
-}
-
-const availablePlatforms: Platform[] = [
+const initialPlatforms: Platform[] = [
   { 
     id: 'etsy',
     name: 'Etsy',
@@ -101,8 +74,50 @@ const availablePlatforms: Platform[] = [
 
 const IntegrationsPage = () => {
   const { toast } = useToast();
-  const [platforms, setPlatforms] = useState<Platform[]>(availablePlatforms);
+  const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const verifySquareConnection = async () => {
+      try {
+        setIsLoading(true);
+        const isConnected = await checkSquareConnection();
+        
+        setPlatforms(prev => 
+          prev.map(platform => 
+            platform.id === 'square' 
+              ? { ...platform, status: isConnected ? 'connected' : 'not_connected' } 
+              : platform
+          )
+        );
+        
+        if (isConnected) {
+          toast({
+            title: "Square Connection Verified",
+            description: "Your Square integration is active and working correctly.",
+          });
+        } else {
+          toast({
+            title: "Square Connection Issue",
+            description: "There was a problem connecting to Square. Please check your API credentials.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error("Failed to verify Square connection:", error);
+        toast({
+          title: "Connection Error",
+          description: "Could not verify Square connection status.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    verifySquareConnection();
+  }, [toast]);
   
   const connectedPlatforms = platforms.filter(p => p.status === 'connected');
   const notConnectedPlatforms = platforms.filter(p => p.status === 'not_connected');
@@ -139,25 +154,17 @@ const IntegrationsPage = () => {
   
   const handleSync = (platformId: string) => {
     toast({
-      title: "Synchronizing",
-      description: `Synchronizing data with the platform...`,
+      title: "Synchronization Complete",
+      description: `Products have been synchronized with ${platforms.find(p => p.id === platformId)?.name}.`,
     });
     
-    // Simulate sync
-    setTimeout(() => {
-      setPlatforms(prev => 
-        prev.map(platform => 
-          platform.id === platformId 
-            ? { ...platform, lastSync: 'Just now' }
-            : platform
-        )
-      );
-      
-      toast({
-        title: "Sync Complete",
-        description: `Data has been synchronized successfully.`,
-      });
-    }, 1500);
+    setPlatforms(prev => 
+      prev.map(platform => 
+        platform.id === platformId 
+          ? { ...platform, lastSync: 'Just now' }
+          : platform
+      )
+    );
   };
   
   const displayPlatforms = activeTab === 'all' 
@@ -168,6 +175,12 @@ const IntegrationsPage = () => {
   
   return (
     <div className="space-y-6">
+      {isLoading && (
+        <div className="bg-blue-50 p-4 rounded-md border border-blue-200 mb-4">
+          <p className="text-blue-700 text-sm">Verifying connection status with platforms...</p>
+        </div>
+      )}
+      
       <div>
         <h1 className="text-2xl font-bold">Platform Integrations</h1>
         <p className="text-muted-foreground">Connect your product listings to multiple e-commerce platforms.</p>
@@ -268,138 +281,6 @@ const IntegrationsPage = () => {
         </TabsContent>
       </Tabs>
     </div>
-  );
-};
-
-interface PlatformCardProps {
-  platform: Platform;
-  onConnect: (id: string) => void;
-  onDisconnect: (id: string) => void;
-  onSync: (id: string) => void;
-}
-
-const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCardProps) => {
-  const [isConnecting, setIsConnecting] = useState(false);
-  
-  const handleConnectClick = () => {
-    setIsConnecting(true);
-    // Simulate connection process
-    setTimeout(() => {
-      onConnect(platform.id);
-      setIsConnecting(false);
-    }, 1000);
-  };
-  
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">{platform.icon}</div>
-            <div>
-              <CardTitle>{platform.name}</CardTitle>
-              {platform.status === 'connected' && (
-                <div className="flex items-center mt-1">
-                  <Badge className="bg-green-100 text-green-800 text-xs">Connected</Badge>
-                  {platform.lastSync && (
-                    <span className="text-xs text-muted-foreground ml-2">
-                      Last sync: {platform.lastSync}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {platform.status === 'connected' && (
-            <Button variant="ghost" size="icon" onClick={() => onSync(platform.id)}>
-              <RefreshCw className="h-4 w-4" />
-              <span className="sr-only">Sync</span>
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{platform.description}</p>
-      </CardContent>
-      <CardFooter className="flex justify-between pt-3 border-t">
-        {platform.status === 'connected' ? (
-          <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
-                  <X className="h-4 w-4 mr-2" />
-                  Disconnect
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Disconnect {platform.name}?</DialogTitle>
-                  <DialogDescription>
-                    This will remove the connection and stop syncing products with {platform.name}.
-                    Your existing listings on {platform.name} will not be affected.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => onDisconnect(platform.id)}>
-                    Yes, Disconnect
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
-          </>
-        ) : (
-          <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isConnecting}>
-                  {isConnecting ? (
-                    "Connecting..."
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Connect
-                    </>
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Connect to {platform.name}</DialogTitle>
-                  <DialogDescription>
-                    Enter your {platform.name} API credentials to connect your account.
-                    This will allow EasyHub to manage your product listings.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="api-key">API Key</Label>
-                    <Input id="api-key" placeholder="Enter API key" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="api-secret">API Secret</Label>
-                    <Input id="api-secret" type="password" placeholder="Enter API secret" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => handleConnectClick()}>
-                    Connect Platform
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Button variant="link" size="sm" className="text-muted-foreground">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Learn More
-            </Button>
-          </>
-        )}
-      </CardFooter>
-    </Card>
   );
 };
 

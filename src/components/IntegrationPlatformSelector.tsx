@@ -3,6 +3,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { checkSquareConnection } from "@/utils/squareApi";
 
 interface IntegrationPlatform {
   id: string;
@@ -16,19 +18,42 @@ interface IntegrationPlatformSelectorProps {
   setSelectedPlatforms: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-// Mock data for available platforms
-const availablePlatforms: IntegrationPlatform[] = [
-  { id: 'etsy', name: 'Etsy', icon: '🏪', connected: true },
-  { id: 'tiktok', name: 'TikTok Shop', icon: '📱', connected: true },
-  { id: 'facebook', name: 'Facebook Marketplace', icon: '👥', connected: true },
-  { id: 'square', name: 'Square', icon: '🔲', connected: true },
-  { id: 'instagram', name: 'Instagram Shop', icon: '📸', connected: false },
-];
-
 const IntegrationPlatformSelector = ({
   selectedPlatforms,
   setSelectedPlatforms
 }: IntegrationPlatformSelectorProps) => {
+  const [availablePlatforms, setAvailablePlatforms] = useState<IntegrationPlatform[]>([
+    { id: 'etsy', name: 'Etsy', icon: '🏪', connected: true },
+    { id: 'tiktok', name: 'TikTok Shop', icon: '📱', connected: true },
+    { id: 'facebook', name: 'Facebook Marketplace', icon: '👥', connected: true },
+    { id: 'square', name: 'Square', icon: '🔲', connected: true },
+    { id: 'instagram', name: 'Instagram Shop', icon: '📸', connected: false },
+  ]);
+  
+  const [isValidating, setIsValidating] = useState(true);
+  
+  useEffect(() => {
+    const verifySquareConnection = async () => {
+      try {
+        setIsValidating(true);
+        const isConnected = await checkSquareConnection();
+        
+        setAvailablePlatforms(prev => 
+          prev.map(platform => 
+            platform.id === 'square' 
+              ? { ...platform, connected: isConnected } 
+              : platform
+          )
+        );
+      } catch (error) {
+        console.error("Failed to verify Square connection:", error);
+      } finally {
+        setIsValidating(false);
+      }
+    };
+    
+    verifySquareConnection();
+  }, []);
   
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms(prev => {
@@ -49,7 +74,7 @@ const IntegrationPlatformSelector = ({
               id={`platform-${platform.id}`}
               checked={selectedPlatforms.includes(platform.id)}
               onCheckedChange={() => platform.connected && handlePlatformToggle(platform.id)}
-              disabled={!platform.connected}
+              disabled={!platform.connected || isValidating}
             />
             <Label
               htmlFor={`platform-${platform.id}`}
@@ -57,6 +82,9 @@ const IntegrationPlatformSelector = ({
             >
               <span className="text-lg">{platform.icon}</span>
               <span>{platform.name}</span>
+              {platform.id === 'square' && isValidating && (
+                <span className="text-xs text-muted-foreground ml-2">(Validating...)</span>
+              )}
             </Label>
             {!platform.connected && (
               <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-1 rounded">
