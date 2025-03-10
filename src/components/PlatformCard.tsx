@@ -15,8 +15,6 @@ interface PlatformCardProps {
 }
 
 const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCardProps) => {
-  const [isConnecting, setIsConnecting] = useState(false);
-
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -87,8 +85,7 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
           </>
         ) : (
           <PlatformConnector
-            platformId={platform.id}
-            platformName={platform.name}
+            platform={platform}
             onConnect={onConnect}
           />
         )}

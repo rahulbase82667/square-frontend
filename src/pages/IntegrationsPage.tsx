@@ -14,7 +14,8 @@ const availablePlatforms: Platform[] = [
     description: 'Sell handmade and vintage goods on the Etsy marketplace.',
     icon: '🏪',
     status: 'connected',
-    lastSync: '2 hours ago'
+    lastSync: '2 hours ago',
+    requiredCredentials: ['apiKey', 'clientSecret']
   },
   { 
     id: 'tiktok',
@@ -22,7 +23,8 @@ const availablePlatforms: Platform[] = [
     description: 'Sell directly to TikTok users through the integrated shopping feature.',
     icon: '📱',
     status: 'connected',
-    lastSync: '1 day ago'
+    lastSync: '1 day ago',
+    requiredCredentials: ['accessToken', 'clientId', 'clientSecret']
   },
   { 
     id: 'facebook',
@@ -30,7 +32,8 @@ const availablePlatforms: Platform[] = [
     description: 'List products on Facebook\'s marketplace for local and shipping sales.',
     icon: '👥',
     status: 'connected',
-    lastSync: '3 hours ago'
+    lastSync: '3 hours ago',
+    requiredCredentials: ['accessToken', 'clientId']
   },
   { 
     id: 'square',
@@ -38,35 +41,40 @@ const availablePlatforms: Platform[] = [
     description: 'Sync inventory with your Square point-of-sale system and online store.',
     icon: '🔲',
     status: 'connected',
-    lastSync: '5 hours ago'
+    lastSync: '5 hours ago',
+    requiredCredentials: ['apiKey', 'accessToken']
   },
   { 
     id: 'instagram',
     name: 'Instagram Shop',
     description: 'Enable shopping features on your Instagram business profile.',
     icon: '📸',
-    status: 'not_connected'
+    status: 'not_connected',
+    requiredCredentials: ['accessToken', 'clientId']
   },
   { 
     id: 'amazon',
     name: 'Amazon',
     description: 'List products on Amazon\'s marketplace for global reach.',
     icon: '📦',
-    status: 'not_connected'
+    status: 'not_connected',
+    requiredCredentials: ['apiKey', 'clientSecret', 'accessToken']
   },
   { 
     id: 'shopify',
     name: 'Shopify',
     description: 'Sync with your Shopify store to manage inventory across channels.',
     icon: '🛒',
-    status: 'not_connected'
+    status: 'not_connected',
+    requiredCredentials: ['apiKey', 'apiSecret']
   },
   { 
     id: 'ebay',
     name: 'eBay',
     description: 'List products on eBay\'s auction and fixed-price marketplace.',
     icon: '🏷️',
-    status: 'not_connected'
+    status: 'not_connected',
+    requiredCredentials: ['clientId', 'clientSecret']
   },
 ];
 

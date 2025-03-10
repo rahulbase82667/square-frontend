@@ -14,24 +14,27 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from 'lucide-react';
+import type { Platform, PlatformCredentials } from '@/types/platform';
 
 interface PlatformConnectorProps {
-  platformId: string;
-  platformName: string;
+  platform: Platform;
   onConnect: (platformId: string) => void;
 }
 
-export const PlatformConnector = ({ platformId, platformName, onConnect }: PlatformConnectorProps) => {
-  const [apiKey, setApiKey] = useState('');
-  const [apiSecret, setApiSecret] = useState('');
+export const PlatformConnector = ({ platform, onConnect }: PlatformConnectorProps) => {
+  const [credentials, setCredentials] = useState<PlatformCredentials>({});
   const [isConnecting, setIsConnecting] = useState(false);
   const { toast } = useToast();
 
   const handleConnect = async () => {
-    if (!apiKey || !apiSecret) {
+    const missingCredentials = platform.requiredCredentials.filter(
+      cred => !credentials[cred]
+    );
+
+    if (missingCredentials.length > 0) {
       toast({
         title: "Missing Credentials",
-        description: "Please enter both API key and secret",
+        description: `Please enter all required credentials: ${missingCredentials.join(', ')}`,
         variant: "destructive",
       });
       return;
@@ -40,17 +43,13 @@ export const PlatformConnector = ({ platformId, platformName, onConnect }: Platf
     setIsConnecting(true);
     try {
       // Store credentials securely in localStorage for demo purposes
-      // In a production app, these should be handled by a backend
-      localStorage.setItem(`${platformId}_credentials`, JSON.stringify({
-        apiKey,
-        apiSecret
-      }));
+      localStorage.setItem(`${platform.id}_credentials`, JSON.stringify(credentials));
       
-      onConnect(platformId);
+      onConnect(platform.id);
       
       toast({
         title: "Successfully Connected",
-        description: `Connected to ${platformName} successfully!`,
+        description: `Connected to ${platform.name} successfully!`,
       });
     } catch (error) {
       console.error('Connection error:', error);
@@ -74,31 +73,29 @@ export const PlatformConnector = ({ platformId, platformName, onConnect }: Platf
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Connect to {platformName}</DialogTitle>
+          <DialogTitle>Connect to {platform.name}</DialogTitle>
           <DialogDescription>
-            Enter your {platformName} API credentials to connect your account.
+            Enter your {platform.name} API credentials to connect your account.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="api-key">API Key</Label>
-            <Input
-              id="api-key"
-              placeholder="Enter API key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="api-secret">API Secret</Label>
-            <Input
-              id="api-secret"
-              type="password"
-              placeholder="Enter API secret"
-              value={apiSecret}
-              onChange={(e) => setApiSecret(e.target.value)}
-            />
-          </div>
+          {platform.requiredCredentials.map((credentialType) => (
+            <div key={credentialType} className="space-y-2">
+              <Label htmlFor={credentialType}>
+                {credentialType.split(/(?=[A-Z])/).join(' ').toLowerCase()}
+              </Label>
+              <Input
+                id={credentialType}
+                type={credentialType.toLowerCase().includes('secret') ? 'password' : 'text'}
+                placeholder={`Enter ${credentialType.split(/(?=[A-Z])/).join(' ').toLowerCase()}`}
+                value={credentials[credentialType] || ''}
+                onChange={(e) => setCredentials(prev => ({
+                  ...prev,
+                  [credentialType]: e.target.value
+                }))}
+              />
+            </div>
+          ))}
         </div>
         <DialogFooter>
           <Button
