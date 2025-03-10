@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { checkSquareConnection } from "@/utils/squareApi";
@@ -73,12 +74,19 @@ const IntegrationsPage = () => {
   const [platforms, setPlatforms] = useState<Platform[]>(initialPlatforms);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | undefined>();
+  const [success, setSuccess] = useState(false);
   
   useEffect(() => {
     const verifySquareConnection = async () => {
       try {
         setIsLoading(true);
+        setError(undefined);
+        setSuccess(false);
+        
+        console.log("Verifying Square connection...");
         const isConnected = await checkSquareConnection();
+        console.log("Square connection result:", isConnected);
         
         setPlatforms(prev => 
           prev.map(platform => 
@@ -89,11 +97,13 @@ const IntegrationsPage = () => {
         );
         
         if (isConnected) {
+          setSuccess(true);
           toast({
             title: "Square Connection Verified",
             description: "Your Square integration is active and working correctly.",
           });
         } else {
+          setError("There was a problem connecting to Square. Please check your API credentials.");
           toast({
             title: "Square Connection Issue",
             description: "There was a problem connecting to Square. Please check your API credentials.",
@@ -102,6 +112,7 @@ const IntegrationsPage = () => {
         }
       } catch (error) {
         console.error("Failed to verify Square connection:", error);
+        setError("Could not verify Square connection status.");
         toast({
           title: "Connection Error",
           description: "Could not verify Square connection status.",
@@ -162,7 +173,11 @@ const IntegrationsPage = () => {
 
   return (
     <div className="space-y-6">
-      <IntegrationStatusBanner isLoading={isLoading} />
+      <IntegrationStatusBanner 
+        isLoading={isLoading} 
+        error={error}
+        success={success}
+      />
       
       <div>
         <h1 className="text-2xl font-bold">Platform Integrations</h1>

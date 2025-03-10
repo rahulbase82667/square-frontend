@@ -5,11 +5,12 @@
 // Square API configuration
 const SQUARE_API_URL = 'https://connect.squareup.com/v2';
 const SQUARE_LOCATION_ID = 'L8M3QFES7YACD';
+const SQUARE_API_SECRET = 'EAAAl7wuu6ayAloKJ0uxnDTt6QX2-Sa8W7tmGSuMcADB09D4CNQgyrgBa19QG5hC';
 
 // Headers for Square API requests with proper configuration
 const headers = {
   'Square-Version': '2024-02-22',
-  'Authorization': `Bearer ${process.env.VITE_SQUARE_API_SECRET || 'EAAAl7wuu6ayAloKJ0uxnDTt6QX2-Sa8W7tmGSuMcADB09D4CNQgyrgBa19QG5hC'}`,
+  'Authorization': `Bearer ${SQUARE_API_SECRET}`,
   'Content-Type': 'application/json'
 };
 
@@ -18,6 +19,7 @@ const headers = {
  */
 export const checkSquareConnection = async (): Promise<boolean> => {
   try {
+    console.log("Checking Square connection...");
     const response = await fetch(`${SQUARE_API_URL}/locations`, {
       method: 'GET',
       headers
@@ -30,6 +32,7 @@ export const checkSquareConnection = async (): Promise<boolean> => {
     }
 
     const data = await response.json();
+    console.log("Square connection successful:", data);
     return data.locations && data.locations.length > 0;
   } catch (error) {
     console.error('Failed to connect to Square API:', error);
@@ -126,16 +129,21 @@ export const updateInventory = async (catalogObjectId: string, quantity: number)
  */
 export const getCatalogItems = async (): Promise<any> => {
   try {
+    console.log("Fetching catalog items from Square...");
     const response = await fetch(`${SQUARE_API_URL}/catalog/list?types=ITEM`, {
       method: 'GET',
       headers
     });
 
     if (!response.ok) {
-      throw new Error(`Square API error: ${response.status}`);
+      const errorData = await response.json();
+      console.error('Square API Error:', errorData);
+      throw new Error(`Square API error: ${JSON.stringify(errorData)}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("Catalog items fetched successfully:", data);
+    return data;
   } catch (error) {
     console.error('Failed to fetch catalog items from Square:', error);
     throw error;
