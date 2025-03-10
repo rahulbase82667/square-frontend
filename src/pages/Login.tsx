@@ -54,7 +54,7 @@ const Login = () => {
           <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
           <div className="mt-2">
             <p className="text-xs text-gray-500">
-              Only users with @adalondontrading.store or @milogistix.uk email addresses are allowed.
+              Only authorized accounts and domains are allowed access
             </p>
           </div>
         </div>
