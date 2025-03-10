@@ -9,13 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
 import ProductEditForm from "@/components/ProductEditForm";
 
-// Mock product data (in a real app this would come from an API)
 const mockProductData = {
   id: '1',
   name: 'Handmade Ceramic Mug',
   sku: 'MUG001',
   images: ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg'],
-  price: 24.99,
+  price: 19.99,
+  usdPrice: 25.39,
   inventory: 15,
   status: 'Active',
   platforms: ['etsy', 'facebook', 'square'],
@@ -57,27 +57,24 @@ const ProductDetail = () => {
   };
 
   const handleSaveEdit = (updatedProduct: typeof mockProductData) => {
-    // In a real app, this would be an API call
     setProduct(updatedProduct);
     setIsEditing(false);
     
-    // Show success toast with information about platform updates
     toast({
       title: "Product Updated",
       description: `Changes have been pushed to ${updatedProduct.platforms.length} platforms.`,
     });
     
-    // Show individual platform update notifications
     updatedProduct.platforms.forEach((platform, index) => {
       setTimeout(() => {
         toast({
           title: `Updated on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`,
           description: "Product information successfully synced.",
         });
-      }, (index + 1) * 1000); // Stagger notifications
+      }, (index + 1) * 1000);
     });
   };
-  
+
   if (isEditing) {
     return (
       <div className="space-y-6">
@@ -148,7 +145,6 @@ const ProductDetail = () => {
         </div>
       </div>
       
-      {/* The rest of the product detail view remains unchanged */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
@@ -184,7 +180,12 @@ const ProductDetail = () => {
                 <div className="md:w-1/2 space-y-4">
                   <div>
                     <h2 className="text-lg font-semibold">{product.name}</h2>
-                    <p className="text-xl font-bold mt-1">${product.price.toFixed(2)}</p>
+                    <p className="text-xl font-bold mt-1">
+                      {formatGBP(product.price)}
+                      <span className="text-sm text-muted-foreground ml-2">
+                        ({formatUSD(product.usdPrice || product.price * 1.27)})
+                      </span>
+                    </p>
                   </div>
                   
                   <div className="space-y-2">

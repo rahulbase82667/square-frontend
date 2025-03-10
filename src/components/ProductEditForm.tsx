@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,12 +15,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import IntegrationPlatformSelector from "@/components/IntegrationPlatformSelector";
 import ImageUploader from "@/components/ImageUploader";
+import { getGBPToUSDRate, formatGBP, formatUSD } from "@/utils/currencyUtils";
 
 interface ProductData {
   id: string;
   name: string;
   sku: string;
   price: number;
+  usdPrice?: number;
   inventory: number;
   status: string;
   platforms: string[];
@@ -42,20 +43,30 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
   
   const [name, setName] = useState(product.name);
   const [sku, setSku] = useState(product.sku);
-  const [price, setPrice] = useState(product.price.toString());
+  const [priceGBP, setPriceGBP] = useState(product.price.toString());
+  const [priceUSD, setPriceUSD] = useState("0");
   const [inventory, setInventory] = useState(product.inventory.toString());
   const [status, setStatus] = useState(product.status);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(product.platforms);
   const [description, setDescription] = useState(product.description);
   const [category, setCategory] = useState(product.category);
-  
-  // Using the initial product images, would integrate with ImageUploader in a real app
   const [images] = useState(product.images);
+
+  useEffect(() => {
+    const updateUSDPrice = async () => {
+      const rate = await getGBPToUSDRate();
+      const gbpAmount = parseFloat(priceGBP) || 0;
+      const usdAmount = gbpAmount * rate;
+      setPriceUSD(usdAmount.toFixed(2));
+    };
+    
+    updateUSDPrice();
+  }, [priceGBP]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !sku || !price || !category) {
+    if (!name || !sku || !priceGBP || !category) {
       toast({
         title: "Missing information",
         description: "Please fill all required fields",
@@ -73,12 +84,12 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
       return;
     }
     
-    // Create updated product object
     const updatedProduct: ProductData = {
       ...product,
       name,
       sku,
-      price: parseFloat(price),
+      price: parseFloat(priceGBP),
+      usdPrice: parseFloat(priceUSD),
       inventory: parseInt(inventory),
       status,
       platforms: selectedPlatforms,
@@ -106,6 +117,7 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
                   required
                 />
               </div>
+              
               <div>
                 <Label htmlFor="sku">SKU</Label>
                 <Input 
@@ -116,24 +128,29 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
                   required
                 />
               </div>
+              
               <div>
-                <Label htmlFor="price">Price</Label>
+                <Label htmlFor="price">Price (GBP)</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <span className="text-gray-500">$</span>
+                    <span className="text-gray-500">£</span>
                   </div>
                   <Input 
                     id="price" 
                     type="number" 
-                    value={price} 
-                    onChange={(e) => setPrice(e.target.value)} 
+                    value={priceGBP} 
+                    onChange={(e) => setPriceGBP(e.target.value)} 
                     className="pl-7" 
                     min="0" 
                     step="0.01"
                     required
                   />
                 </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  USD: {formatUSD(parseFloat(priceUSD))}
+                </p>
               </div>
+              
               <div>
                 <Label htmlFor="inventory">Inventory</Label>
                 <Input 
@@ -146,6 +163,7 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
                   required
                 />
               </div>
+              
               <div>
                 <Label htmlFor="category">Category</Label>
                 <Select value={category} onValueChange={setCategory}>
@@ -162,6 +180,7 @@ const ProductEditForm = ({ product, onSave, onCancel }: ProductEditFormProps) =>
                   </SelectContent>
                 </Select>
               </div>
+              
               <div>
                 <Label htmlFor="status">Status</Label>
                 <Select value={status} onValueChange={setStatus}>
