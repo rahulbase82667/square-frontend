@@ -8,6 +8,7 @@ import { ArrowLeft, QrCode, Share2, Download, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
 import ProductEditForm from "@/components/ProductEditForm";
+import { formatGBP, formatUSD } from "@/utils/currencyUtils";
 
 const mockProductData = {
   id: '1',
