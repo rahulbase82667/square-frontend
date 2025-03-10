@@ -1,40 +1,11 @@
-
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
-import { 
-  Check, 
-  X, 
-  Plus, 
-  RefreshCw, 
-  ExternalLink, 
-  Settings,
-  AlertCircle
-} from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-interface Platform {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  status: 'connected' | 'not_connected';
-  lastSync?: string;
-}
+import PlatformCard from "@/components/PlatformCard";
+import type { Platform } from "../types/platform";
 
 const availablePlatforms: Platform[] = [
   { 
@@ -130,14 +101,19 @@ const IntegrationsPage = () => {
           : platform
       )
     );
-    
-    toast({
-      title: "Platform Connected",
-      description: `The platform has been connected successfully.`,
-    });
   };
   
   const handleSync = (platformId: string) => {
+    const credentials = localStorage.getItem(`${platformId}_credentials`);
+    if (!credentials) {
+      toast({
+        title: "Sync Failed",
+        description: "Platform credentials not found. Please reconnect the platform.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Synchronizing",
       description: `Synchronizing data with the platform...`,
@@ -165,7 +141,7 @@ const IntegrationsPage = () => {
     : activeTab === 'connected' 
       ? connectedPlatforms 
       : notConnectedPlatforms;
-  
+
   return (
     <div className="space-y-6">
       <div>
@@ -268,138 +244,6 @@ const IntegrationsPage = () => {
         </TabsContent>
       </Tabs>
     </div>
-  );
-};
-
-interface PlatformCardProps {
-  platform: Platform;
-  onConnect: (id: string) => void;
-  onDisconnect: (id: string) => void;
-  onSync: (id: string) => void;
-}
-
-const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCardProps) => {
-  const [isConnecting, setIsConnecting] = useState(false);
-  
-  const handleConnectClick = () => {
-    setIsConnecting(true);
-    // Simulate connection process
-    setTimeout(() => {
-      onConnect(platform.id);
-      setIsConnecting(false);
-    }, 1000);
-  };
-  
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">{platform.icon}</div>
-            <div>
-              <CardTitle>{platform.name}</CardTitle>
-              {platform.status === 'connected' && (
-                <div className="flex items-center mt-1">
-                  <Badge className="bg-green-100 text-green-800 text-xs">Connected</Badge>
-                  {platform.lastSync && (
-                    <span className="text-xs text-muted-foreground ml-2">
-                      Last sync: {platform.lastSync}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {platform.status === 'connected' && (
-            <Button variant="ghost" size="icon" onClick={() => onSync(platform.id)}>
-              <RefreshCw className="h-4 w-4" />
-              <span className="sr-only">Sync</span>
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{platform.description}</p>
-      </CardContent>
-      <CardFooter className="flex justify-between pt-3 border-t">
-        {platform.status === 'connected' ? (
-          <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
-                  <X className="h-4 w-4 mr-2" />
-                  Disconnect
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Disconnect {platform.name}?</DialogTitle>
-                  <DialogDescription>
-                    This will remove the connection and stop syncing products with {platform.name}.
-                    Your existing listings on {platform.name} will not be affected.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => onDisconnect(platform.id)}>
-                    Yes, Disconnect
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
-          </>
-        ) : (
-          <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isConnecting}>
-                  {isConnecting ? (
-                    "Connecting..."
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Connect
-                    </>
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Connect to {platform.name}</DialogTitle>
-                  <DialogDescription>
-                    Enter your {platform.name} API credentials to connect your account.
-                    This will allow EasyHub to manage your product listings.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="api-key">API Key</Label>
-                    <Input id="api-key" placeholder="Enter API key" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="api-secret">API Secret</Label>
-                    <Input id="api-secret" type="password" placeholder="Enter API secret" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => handleConnectClick()}>
-                    Connect Platform
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <Button variant="link" size="sm" className="text-muted-foreground">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Learn More
-            </Button>
-          </>
-        )}
-      </CardFooter>
-    </Card>
   );
 };
 
