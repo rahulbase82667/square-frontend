@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
+import ProductPreview from "@/components/ProductPreview";
 
 // Mock data
 const mockProducts = [
@@ -112,6 +112,7 @@ const ProductsPage = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [products] = useState(mockProducts);
+  const [selectedProduct, setSelectedProduct] = useState<typeof mockProducts[0] | null>(null);
   
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -186,7 +187,11 @@ const ProductsPage = () => {
               <TableBody>
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
-                    <TableRow key={product.id}>
+                    <TableRow 
+                      key={product.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => setSelectedProduct(product)}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9 rounded-md">
@@ -279,6 +284,12 @@ const ProductsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      <ProductPreview 
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   );
 };
