@@ -9,6 +9,41 @@ import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
 import ProductEditForm from "@/components/ProductEditForm";
 import { formatGBP, formatUSD } from "@/utils/currencyUtils";
+import InventorySyncManager from "@/components/InventorySyncManager";
+import { Platform } from "@/types/platform";
+
+const mockPlatforms: Platform[] = [
+  { 
+    id: 'etsy',
+    name: 'Etsy',
+    description: 'Marketplace for handmade items',
+    icon: '🏪',
+    status: 'connected',
+    lastSync: '2 days ago',
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    inventorySync: true
+  },
+  { 
+    id: 'facebook',
+    name: 'Facebook',
+    description: 'Social marketplace',
+    icon: '👥',
+    status: 'connected',
+    lastSync: '2 days ago',
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    inventorySync: false
+  },
+  { 
+    id: 'square',
+    name: 'Square',
+    description: 'Point of sale system',
+    icon: '🔲',
+    status: 'connected',
+    lastSync: '2 days ago',
+    requiredCredentials: ['accessToken', 'refreshToken'],
+    inventorySync: true
+  }
+];
 
 const mockProductData = {
   id: '1',
@@ -221,6 +256,11 @@ const ProductDetail = () => {
               </div>
             </CardContent>
           </Card>
+          
+          <InventorySyncManager 
+            product={product} 
+            connectedPlatforms={mockPlatforms} 
+          />
           
           <Card>
             <CardHeader>

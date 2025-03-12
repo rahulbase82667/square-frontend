@@ -1,17 +1,12 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Package } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { validateCredentials } from "@/utils/platformAuth";
-
-interface IntegrationPlatform {
-  id: string;
-  name: string;
-  icon: string;
-  connected: boolean;
-}
+import { Badge } from "@/components/ui/badge";
+import { Platform } from "@/types/platform";
 
 interface IntegrationPlatformSelectorProps {
   selectedPlatforms: string[];
@@ -22,12 +17,52 @@ const IntegrationPlatformSelector = ({
   selectedPlatforms,
   setSelectedPlatforms
 }: IntegrationPlatformSelectorProps) => {
-  const [availablePlatforms, setAvailablePlatforms] = useState<IntegrationPlatform[]>([
-    { id: 'etsy', name: 'Etsy', icon: '🏪', connected: false },
-    { id: 'tiktok', name: 'TikTok Shop', icon: '📱', connected: false },
-    { id: 'facebook', name: 'Facebook Marketplace', icon: '👥', connected: false },
-    { id: 'square', name: 'Square', icon: '🔲', connected: false },
-    { id: 'instagram', name: 'Instagram Shop', icon: '📸', connected: false },
+  const [availablePlatforms, setAvailablePlatforms] = useState<Platform[]>([
+    { 
+      id: 'etsy', 
+      name: 'Etsy', 
+      icon: '🏪', 
+      status: 'not_connected',
+      description: 'Marketplace for handmade items',
+      requiredCredentials: ['accessToken', 'refreshToken'],
+      inventorySync: true
+    },
+    { 
+      id: 'tiktok', 
+      name: 'TikTok Shop', 
+      icon: '📱', 
+      status: 'not_connected',
+      description: 'Social commerce platform',
+      requiredCredentials: ['accessToken', 'refreshToken'],
+      inventorySync: true
+    },
+    { 
+      id: 'facebook', 
+      name: 'Facebook Marketplace', 
+      icon: '👥', 
+      status: 'not_connected',
+      description: 'Social marketplace platform',
+      requiredCredentials: ['accessToken', 'refreshToken'],
+      inventorySync: false
+    },
+    { 
+      id: 'square', 
+      name: 'Square', 
+      icon: '🔲', 
+      status: 'not_connected',
+      description: 'Point of sale and online payments',
+      requiredCredentials: ['accessToken', 'refreshToken'],
+      inventorySync: true
+    },
+    { 
+      id: 'instagram', 
+      name: 'Instagram Shop', 
+      icon: '📸', 
+      status: 'not_connected',
+      description: 'Social commerce platform',
+      requiredCredentials: ['accessToken', 'refreshToken'],
+      inventorySync: false
+    },
   ]);
   
   // Check for connected platforms
@@ -36,7 +71,7 @@ const IntegrationPlatformSelector = ({
       const isConnected = validateCredentials(platform.id);
       return {
         ...platform,
-        connected: isConnected
+        status: isConnected ? 'connected' as const : 'not_connected' as const
       };
     });
     
@@ -57,21 +92,26 @@ const IntegrationPlatformSelector = ({
     <div className="space-y-4">
       <ul className="space-y-3">
         {availablePlatforms.map(platform => (
-          <li key={platform.id} className={`flex items-center space-x-3 p-2 rounded-md ${platform.connected ? 'bg-white' : 'bg-gray-50'}`}>
+          <li key={platform.id} className={`flex items-center space-x-3 p-2 rounded-md ${platform.status === 'connected' ? 'bg-white' : 'bg-gray-50'}`}>
             <Checkbox
               id={`platform-${platform.id}`}
               checked={selectedPlatforms.includes(platform.id)}
-              onCheckedChange={() => platform.connected && handlePlatformToggle(platform.id)}
-              disabled={!platform.connected}
+              onCheckedChange={() => platform.status === 'connected' && handlePlatformToggle(platform.id)}
+              disabled={platform.status !== 'connected'}
             />
             <Label
               htmlFor={`platform-${platform.id}`}
-              className={`flex items-center gap-2 text-sm cursor-pointer flex-1 ${!platform.connected && 'text-muted-foreground'}`}
+              className={`flex items-center gap-2 text-sm cursor-pointer flex-1 ${platform.status !== 'connected' && 'text-muted-foreground'}`}
             >
               <span className="text-lg">{platform.icon}</span>
               <span>{platform.name}</span>
+              {platform.inventorySync && (
+                <Badge variant="outline" className="ml-1 bg-blue-50 text-blue-700 border-blue-200 text-xs py-0">
+                  <Package className="h-2.5 w-2.5 mr-1" /> Inventory
+                </Badge>
+              )}
             </Label>
-            {!platform.connected && (
+            {platform.status !== 'connected' && (
               <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-1 rounded">
                 Not Connected
               </span>

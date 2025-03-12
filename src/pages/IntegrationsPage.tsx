@@ -22,7 +22,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['listings_r', 'listings_w', 'transactions_r'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
-    webhookSupport: false
+    webhookSupport: false,
+    inventorySync: true
   },
   { 
     id: 'tiktok',
@@ -36,7 +37,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['product.read', 'product.write', 'order.read'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
-    webhookSupport: true
+    webhookSupport: true,
+    inventorySync: true
   },
   { 
     id: 'facebook',
@@ -50,7 +52,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['catalog_management', 'business_management'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
-    webhookSupport: true
+    webhookSupport: true,
+    inventorySync: false
   },
   { 
     id: 'square',
@@ -64,7 +67,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['ITEMS_READ', 'ITEMS_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
-    webhookSupport: true
+    webhookSupport: true,
+    inventorySync: true
   },
   { 
     id: 'instagram',
@@ -78,7 +82,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['user_profile', 'user_media'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: false,
-    webhookSupport: false
+    webhookSupport: false,
+    inventorySync: false
   },
   { 
     id: 'amazon',
@@ -92,7 +97,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['product_listing', 'order_read'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
-    webhookSupport: false
+    webhookSupport: false,
+    inventorySync: true
   },
   { 
     id: 'shopify',
@@ -106,7 +112,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['read_products', 'write_products', 'read_orders'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
-    webhookSupport: true
+    webhookSupport: true,
+    inventorySync: true
   },
   { 
     id: 'ebay',
@@ -120,7 +127,8 @@ const availablePlatforms: Platform[] = [
     scopes: ['https://api.ebay.com/oauth/api_scope/sell.inventory', 'https://api.ebay.com/oauth/api_scope/sell.account'],
     redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
-    webhookSupport: false
+    webhookSupport: false,
+    inventorySync: true
   },
 ];
 

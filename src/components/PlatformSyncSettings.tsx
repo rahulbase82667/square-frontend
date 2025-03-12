@@ -19,6 +19,7 @@ import { Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Platform, PlatformSyncConfig } from "@/types/platform";
 import { getPlatformSyncConfig, savePlatformSyncConfig, startAutoSync, stopAutoSync } from "@/utils/platformSync";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PlatformSyncSettingsProps {
   platform: Platform;
@@ -30,7 +31,10 @@ const PlatformSyncSettings = ({ platform }: PlatformSyncSettingsProps) => {
     autoSync: false,
     syncInterval: 60,
     syncDirection: 'bidirectional',
+    syncInventoryOnly: false,
+    inventoryPriority: 'newest',
   });
+  const [activeTab, setActiveTab] = useState("general");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -79,7 +83,7 @@ const PlatformSyncSettings = ({ platform }: PlatformSyncSettingsProps) => {
           Sync Settings
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{platform.name} Synchronization Settings</DialogTitle>
           <DialogDescription>
@@ -87,72 +91,117 @@ const PlatformSyncSettings = ({ platform }: PlatformSyncSettingsProps) => {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="auto-sync">Automatic Synchronization</Label>
-              <p className="text-sm text-muted-foreground">
-                Enable to automatically sync products on a schedule
-              </p>
-            </div>
-            <Switch
-              id="auto-sync"
-              checked={syncConfig.autoSync}
-              onCheckedChange={(checked) => setSyncConfig({...syncConfig, autoSync: checked})}
-            />
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="inventory" disabled={!platform.inventorySync}>Inventory</TabsTrigger>
+          </TabsList>
           
-          {syncConfig.autoSync && (
-            <div className="space-y-2">
-              <Label htmlFor="sync-interval">Sync Interval (minutes)</Label>
-              <Input
-                id="sync-interval"
-                type="number"
-                min="15"
-                value={syncConfig.syncInterval}
-                onChange={(e) => setSyncConfig({...syncConfig, syncInterval: parseInt(e.target.value) || 60})}
+          <TabsContent value="general" className="space-y-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto-sync">Automatic Synchronization</Label>
+                <p className="text-sm text-muted-foreground">
+                  Enable to automatically sync products on a schedule
+                </p>
+              </div>
+              <Switch
+                id="auto-sync"
+                checked={syncConfig.autoSync}
+                onCheckedChange={(checked) => setSyncConfig({...syncConfig, autoSync: checked})}
               />
-              <p className="text-xs text-muted-foreground">
-                Minimum 15 minutes to avoid API rate limits
-              </p>
             </div>
-          )}
-          
-          <div className="space-y-2">
-            <Label>Synchronization Direction</Label>
-            <RadioGroup
-              value={syncConfig.syncDirection}
-              onValueChange={(value: 'import' | 'export' | 'bidirectional') => 
-                setSyncConfig({...syncConfig, syncDirection: value})
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="bidirectional" id="bidirectional" />
-                <Label htmlFor="bidirectional">Two-way (Import & Export)</Label>
+            
+            {syncConfig.autoSync && (
+              <div className="space-y-2">
+                <Label htmlFor="sync-interval">Sync Interval (minutes)</Label>
+                <Input
+                  id="sync-interval"
+                  type="number"
+                  min="15"
+                  value={syncConfig.syncInterval}
+                  onChange={(e) => setSyncConfig({...syncConfig, syncInterval: parseInt(e.target.value) || 60})}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Minimum 15 minutes to avoid API rate limits
+                </p>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="import" id="import" />
-                <Label htmlFor="import">Import Only (From {platform.name} to this app)</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="export" id="export" />
-                <Label htmlFor="export">Export Only (From this app to {platform.name})</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          
-          {platform.webhookSupport && (
+            )}
+            
             <div className="space-y-2">
-              <Label>Webhook Integration</Label>
-              <p className="text-sm text-muted-foreground">
-                {platform.name} supports real-time updates via webhooks. This allows immediate syncing when products change.
-              </p>
-              <Button variant="outline" size="sm" className="mt-2">
-                Configure Webhook
-              </Button>
+              <Label>Synchronization Direction</Label>
+              <RadioGroup
+                value={syncConfig.syncDirection}
+                onValueChange={(value: 'import' | 'export' | 'bidirectional') => 
+                  setSyncConfig({...syncConfig, syncDirection: value})
+                }
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="bidirectional" id="bidirectional" />
+                  <Label htmlFor="bidirectional">Two-way (Import & Export)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="import" id="import" />
+                  <Label htmlFor="import">Import Only (From {platform.name} to this app)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="export" id="export" />
+                  <Label htmlFor="export">Export Only (From this app to {platform.name})</Label>
+                </div>
+              </RadioGroup>
             </div>
-          )}
-        </div>
+            
+            {platform.webhookSupport && (
+              <div className="space-y-2">
+                <Label>Webhook Integration</Label>
+                <p className="text-sm text-muted-foreground">
+                  {platform.name} supports real-time updates via webhooks. This allows immediate syncing when products change.
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  Configure Webhook
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="inventory" className="space-y-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="sync-inventory-only">Inventory-Only Sync</Label>
+                <p className="text-sm text-muted-foreground">
+                  Only synchronize inventory quantities, not full product details
+                </p>
+              </div>
+              <Switch
+                id="sync-inventory-only"
+                checked={syncConfig.syncInventoryOnly}
+                onCheckedChange={(checked) => setSyncConfig({...syncConfig, syncInventoryOnly: checked})}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="inventory-priority">Inventory Conflict Resolution</Label>
+              <Select 
+                value={syncConfig.inventoryPriority || 'newest'} 
+                onValueChange={(value: 'platform' | 'local' | 'newest') => 
+                  setSyncConfig({...syncConfig, inventoryPriority: value})
+                }
+              >
+                <SelectTrigger id="inventory-priority">
+                  <SelectValue placeholder="Select conflict resolution strategy" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Use most recent update</SelectItem>
+                  <SelectItem value="platform">Always use {platform.name}'s inventory</SelectItem>
+                  <SelectItem value="local">Always use local inventory</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Determines which inventory count to use when there are conflicts
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
         
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>

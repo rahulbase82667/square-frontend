@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Settings, X, ExternalLink } from 'lucide-react';
+import { RefreshCw, Settings, X, ExternalLink, Package } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlatformOAuthConnector } from './PlatformOAuthConnector';
 import { useToast } from "@/hooks/use-toast";
 import { clearPlatformCredentials } from "@/utils/platformAuth";
 import { syncWithPlatform } from "@/utils/platformSync";
+import { syncInventory } from "@/utils/inventorySync";
 import PlatformSyncSettings from './PlatformSyncSettings';
 import type { Platform, SyncResult } from '../types/platform';
 
@@ -22,6 +23,7 @@ interface PlatformCardProps {
 const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCardProps) => {
   const { toast } = useToast();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isInventorySyncing, setIsInventorySyncing] = useState(false);
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
 
   const handleDisconnect = () => {
@@ -64,6 +66,50 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
       setIsSyncing(false);
     }
   };
+  
+  const handleInventorySync = async () => {
+    if (!platform.inventorySync) {
+      toast({
+        title: "Not Supported",
+        description: `${platform.name} does not support inventory synchronization.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsInventorySyncing(true);
+    toast({
+      title: "Syncing Inventory",
+      description: `Updating inventory with ${platform.name}...`,
+    });
+    
+    try {
+      const result = await syncInventory(platform);
+      
+      if (result.success) {
+        toast({
+          title: "Inventory Sync Complete",
+          description: `Updated ${result.details?.inventoryUpdated || 0} items with ${platform.name}.`,
+        });
+        onSync(platform.id); // Update UI with new last sync time
+      } else {
+        toast({
+          title: "Inventory Sync Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Inventory sync error:', error);
+      toast({
+        title: "Sync Error",
+        description: `An unexpected error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsInventorySyncing(false);
+    }
+  };
 
   return (
     <Card>
@@ -97,6 +143,14 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
       <CardContent>
         <p className="text-sm text-muted-foreground">{platform.description}</p>
         
+        {platform.inventorySync && (
+          <div className="mt-2">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              <Package className="h-3 w-3 mr-1" /> Inventory Sync
+            </Badge>
+          </div>
+        )}
+        
         {lastSyncResult && lastSyncResult.details && (
           <div className="mt-3 p-2 bg-gray-50 rounded-md text-xs">
             <p className="font-medium">Last Sync Results:</p>
@@ -105,6 +159,11 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
                 Items synced: {lastSyncResult.details.itemsSynced || 0}
                 {lastSyncResult.details.itemsFailed ? ` (${lastSyncResult.details.itemsFailed} failed)` : ''}
               </p>
+              {lastSyncResult.details.inventoryUpdated !== undefined && (
+                <p>
+                  Inventory items updated: {lastSyncResult.details.inventoryUpdated}
+                </p>
+              )}
               {lastSyncResult.details.errors && lastSyncResult.details.errors.length > 0 && (
                 <div>
                   <p className="text-red-600">Errors:</p>
@@ -151,9 +210,22 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
             <div className="flex space-x-2">
               <PlatformSyncSettings platform={platform} />
               
+              {platform.inventorySync && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleInventorySync} 
+                  disabled={isInventorySyncing}
+                  className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                >
+                  <Package className={`h-4 w-4 mr-2 ${isInventorySyncing ? 'animate-spin' : ''}`} />
+                  {isInventorySyncing ? 'Syncing...' : 'Sync Inventory'}
+                </Button>
+              )}
+              
               <Button variant="ghost" size="sm" onClick={handleSync} disabled={isSyncing}>
                 <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Syncing...' : 'Sync Now'}
+                {isSyncing ? 'Syncing...' : 'Sync All'}
               </Button>
             </div>
           </>

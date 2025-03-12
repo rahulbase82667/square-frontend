@@ -1,6 +1,6 @@
-
 import { Platform, SyncResult, PlatformSyncConfig } from "@/types/platform";
 import { getPlatformCredentials, refreshAccessToken, validateCredentials } from "./platformAuth";
+import { syncInventory } from "./inventorySync";
 import { toast } from "@/hooks/use-toast";
 
 // Simulate platform-specific API calls for different platforms
@@ -141,14 +141,18 @@ export const getPlatformSyncConfig = (platformId: string): PlatformSyncConfig =>
     return config ? JSON.parse(config) : {
       autoSync: false,
       syncInterval: 60, // Default to hourly
-      syncDirection: 'bidirectional'
+      syncDirection: 'bidirectional',
+      syncInventoryOnly: false,
+      inventoryPriority: 'newest'
     };
   } catch (error) {
     console.error("Failed to retrieve platform sync config:", error);
     return {
       autoSync: false,
       syncInterval: 60,
-      syncDirection: 'bidirectional'
+      syncDirection: 'bidirectional',
+      syncInventoryOnly: false,
+      inventoryPriority: 'newest'
     };
   }
 };
@@ -188,6 +192,14 @@ export const syncWithPlatform = async (
     }
   }
 
+  const config = getPlatformSyncConfig(platform.id);
+  
+  // Check if we should only sync inventory
+  if (config.syncInventoryOnly && platform.inventorySync) {
+    return await syncInventory(platform);
+  }
+
+  // If we reach here, do the standard full sync
   // Get the API handler for this platform
   const apiHandler = platformApiHandlers[platform.id];
   if (!apiHandler) {
@@ -201,6 +213,7 @@ export const syncWithPlatform = async (
   try {
     let importResult: SyncResult | undefined;
     let exportResult: SyncResult | undefined;
+    let inventoryResult: SyncResult | undefined;
 
     // Import products if direction is import or bidirectional
     if (direction === 'import' || direction === 'bidirectional') {
@@ -217,6 +230,11 @@ export const syncWithPlatform = async (
         return exportResult;
       }
     }
+    
+    // Also sync inventory if supported
+    if (platform.inventorySync) {
+      inventoryResult = await syncInventory(platform);
+    }
 
     // Combine results or return the appropriate one
     if (importResult && exportResult) {
@@ -227,13 +245,32 @@ export const syncWithPlatform = async (
         details: {
           itemsSynced: (importResult.details?.itemsSynced || 0) + (exportResult.details?.itemsSynced || 0),
           itemsFailed: (importResult.details?.itemsFailed || 0) + (exportResult.details?.itemsFailed || 0),
-          errors: [...(importResult.details?.errors || []), ...(exportResult.details?.errors || [])]
+          inventoryUpdated: inventoryResult?.details?.inventoryUpdated || 0,
+          errors: [
+            ...(importResult.details?.errors || []), 
+            ...(exportResult.details?.errors || []),
+            ...(inventoryResult?.details?.errors || [])
+          ]
         }
       };
     } else if (importResult) {
-      return importResult;
+      return {
+        ...importResult,
+        details: {
+          ...importResult.details,
+          inventoryUpdated: inventoryResult?.details?.inventoryUpdated || 0
+        }
+      };
     } else if (exportResult) {
-      return exportResult;
+      return {
+        ...exportResult,
+        details: {
+          ...exportResult.details,
+          inventoryUpdated: inventoryResult?.details?.inventoryUpdated || 0
+        }
+      };
+    } else if (inventoryResult) {
+      return inventoryResult;
     }
 
     // Default success response if we somehow get here
