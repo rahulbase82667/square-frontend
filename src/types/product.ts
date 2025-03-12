@@ -12,4 +12,6 @@ export interface Product {
   category?: string;
   dateAdded?: string;
   lastUpdated?: string;
+  images?: string[]; // For multiple product images
+  usdPrice?: number; // For price in USD
 }

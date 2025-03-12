@@ -10,12 +10,17 @@ import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
 import StatusBadge from "@/components/products/StatusBadge";
 import { formatGBP, formatUSD } from "@/utils/currencyUtils";
+import ProductEditDialog from "@/components/products/ProductEditDialog";
+import DeleteProductDialog from "@/components/products/DeleteProductDialog";
+import ShareProductDialog from "@/components/products/ShareProductDialog";
+import { Product } from "@/types/product";
 
 // Mock product data for initial implementation
-const mockProductData = {
+const mockProductData: Product = {
   id: '1',
   name: 'Handmade Ceramic Mug',
   sku: 'MUG001',
+  image: '/placeholder.svg',
   images: ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg'],
   price: 24.99,
   usdPrice: 31.99,
@@ -42,13 +47,40 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // In a real application, you would fetch product data based on the ID
-  const [product] = useState(mockProductData);
+  const [product, setProduct] = useState<Product>(mockProductData);
+  
+  // Dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   
   const handleDownloadQR = () => {
+    // In a real app, this would generate and download a QR code
+    // For now we'll just show a toast
     toast({
       title: "QR Code Downloaded",
       description: "The QR code has been saved to your downloads folder."
     });
+  };
+
+  const handleProductUpdate = (updatedProduct: Product) => {
+    // Update the product state with the new data
+    setProduct(updatedProduct);
+    
+    // In a real app, you would send this data to your API
+    // For now, we'll just update the local state
+  };
+
+  const handleShareClick = () => {
+    setShareDialogOpen(true);
+  };
+
+  const handleEditClick = () => {
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -69,15 +101,27 @@ const ProductDetail = () => {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={handleShareClick}
+          >
             <Share2 className="h-4 w-4" />
             Share
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={handleEditClick}
+          >
             <Edit className="h-4 w-4" />
             Edit
           </Button>
-          <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 gap-2">
+          <Button 
+            variant="outline" 
+            className="text-red-600 border-red-200 hover:bg-red-50 gap-2"
+            onClick={handleDeleteClick}
+          >
             <Trash className="h-4 w-4" />
             Delete
           </Button>
@@ -92,13 +136,13 @@ const ProductDetail = () => {
                 <div className="md:w-1/2 space-y-4">
                   <div className="aspect-square overflow-hidden rounded-md border">
                     <img 
-                      src={product.images[currentImageIndex]} 
+                      src={product.images?.[currentImageIndex] || product.image} 
                       alt={product.name} 
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <div className="flex gap-2">
-                    {product.images.map((img, idx) => (
+                    {product.images?.map((img, idx) => (
                       <button 
                         key={idx}
                         className={`h-16 w-16 overflow-hidden rounded border ${
@@ -248,6 +292,28 @@ const ProductDetail = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Dialogs */}
+      <ProductEditDialog 
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        product={product}
+        onSave={handleProductUpdate}
+      />
+      
+      <DeleteProductDialog 
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        productId={product.id}
+        productName={product.name}
+      />
+      
+      <ShareProductDialog 
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        productId={product.id}
+        productName={product.name}
+      />
     </div>
   );
 };
