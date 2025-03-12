@@ -1,20 +1,10 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PlatformBadge from "@/components/PlatformBadge";
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  image: string;
-  price: number;
-  inventory: number;
-  status: string;
-  platforms: string[];
-}
+import { Product } from "@/types/product";
+import StatusBadge from "@/components/products/StatusBadge";
 
 interface ProductPreviewProps {
   product: Product | null;
@@ -47,18 +37,7 @@ const ProductPreview = ({ product, isOpen, onClose }: ProductPreviewProps) => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Badge 
-                variant="outline"
-                className={
-                  product.status === "Active" 
-                    ? "bg-green-100 text-green-800 hover:bg-green-100" 
-                    : product.status === "Draft"
-                      ? "bg-gray-100 text-gray-800 hover:bg-gray-100"
-                      : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                }
-              >
-                {product.status}
-              </Badge>
+              <StatusBadge status={product.status} />
             </div>
             
             <div>
