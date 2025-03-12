@@ -8,4 +8,8 @@ export interface Product {
   inventory: number;
   status: string;
   platforms: string[];
+  description?: string;
+  category?: string;
+  dateAdded?: string;
+  lastUpdated?: string;
 }

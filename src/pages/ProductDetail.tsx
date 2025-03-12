@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,51 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, QrCode, Share2, Download, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PlatformBadge from "@/components/PlatformBadge";
-import ProductEditForm from "@/components/ProductEditForm";
+import StatusBadge from "@/components/products/StatusBadge";
 import { formatGBP, formatUSD } from "@/utils/currencyUtils";
-import InventorySyncManager from "@/components/InventorySyncManager";
-import { Platform } from "@/types/platform";
 
-const mockPlatforms: Platform[] = [
-  { 
-    id: 'etsy',
-    name: 'Etsy',
-    description: 'Marketplace for handmade items',
-    icon: '🏪',
-    status: 'connected',
-    lastSync: '2 days ago',
-    requiredCredentials: ['accessToken', 'refreshToken'],
-    inventorySync: true
-  },
-  { 
-    id: 'facebook',
-    name: 'Facebook',
-    description: 'Social marketplace',
-    icon: '👥',
-    status: 'connected',
-    lastSync: '2 days ago',
-    requiredCredentials: ['accessToken', 'refreshToken'],
-    inventorySync: false
-  },
-  { 
-    id: 'square',
-    name: 'Square',
-    description: 'Point of sale system',
-    icon: '🔲',
-    status: 'connected',
-    lastSync: '2 days ago',
-    requiredCredentials: ['accessToken', 'refreshToken'],
-    inventorySync: true
-  }
-];
-
+// Mock product data for initial implementation
 const mockProductData = {
   id: '1',
   name: 'Handmade Ceramic Mug',
   sku: 'MUG001',
   images: ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg'],
-  price: 19.99,
-  usdPrice: 25.39,
+  price: 24.99,
+  usdPrice: 31.99,
   inventory: 15,
   status: 'Active',
   platforms: ['etsy', 'facebook', 'square'],
@@ -63,7 +30,7 @@ Features:
 - Microwave and dishwasher safe
 - Available in multiple colors
 
-This handcrafted item features unique designs that capture attention. Perfect for gifts and personal use, it combines style and functionality. Made with high-quality materials ensuring durability and satisfaction. #HandmadeGifts #UniqueDesigns #QualityCrafts`,
+This handcrafted item features unique designs that capture attention. Perfect for gifts and personal use, it combines style and functionality. Made with high-quality materials ensuring durability and satisfaction.`,
   category: 'Home & Kitchen',
   dateAdded: '2023-11-15',
   lastUpdated: '2023-12-02'
@@ -74,8 +41,8 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [product, setProduct] = useState(mockProductData);
-  const [isEditing, setIsEditing] = useState(false);
+  // In a real application, you would fetch product data based on the ID
+  const [product] = useState(mockProductData);
   
   const handleDownloadQR = () => {
     toast({
@@ -84,59 +51,6 @@ const ProductDetail = () => {
     });
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-  };
-
-  const handleSaveEdit = (updatedProduct: typeof mockProductData) => {
-    setProduct(updatedProduct);
-    setIsEditing(false);
-    
-    toast({
-      title: "Product Updated",
-      description: `Changes have been pushed to ${updatedProduct.platforms.length} platforms.`,
-    });
-    
-    updatedProduct.platforms.forEach((platform, index) => {
-      setTimeout(() => {
-        toast({
-          title: `Updated on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`,
-          description: "Product information successfully synced.",
-        });
-      }, (index + 1) * 1000);
-    });
-  };
-
-  if (isEditing) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleCancelEdit}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Edit Product</h1>
-            <p className="text-sm text-muted-foreground">Update product information and push to platforms</p>
-          </div>
-        </div>
-        
-        <ProductEditForm 
-          product={product} 
-          onSave={handleSaveEdit} 
-          onCancel={handleCancelEdit} 
-        />
-      </div>
-    );
-  }
-  
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -151,18 +65,7 @@ const ProductDetail = () => {
           <h1 className="text-2xl font-bold">{product.name}</h1>
           <div className="flex items-center gap-2">
             <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
-            <Badge 
-              variant="outline"
-              className={
-                product.status === "Active" 
-                  ? "bg-green-100 text-green-800 hover:bg-green-100" 
-                  : product.status === "Draft"
-                    ? "bg-gray-100 text-gray-800 hover:bg-gray-100"
-                    : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-              }
-            >
-              {product.status}
-            </Badge>
+            <StatusBadge status={product.status} />
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -170,7 +73,7 @@ const ProductDetail = () => {
             <Share2 className="h-4 w-4" />
             Share
           </Button>
-          <Button variant="outline" className="gap-2" onClick={handleEdit}>
+          <Button variant="outline" className="gap-2">
             <Edit className="h-4 w-4" />
             Edit
           </Button>
@@ -257,11 +160,6 @@ const ProductDetail = () => {
             </CardContent>
           </Card>
           
-          <InventorySyncManager 
-            product={product} 
-            connectedPlatforms={mockPlatforms} 
-          />
-          
           <Card>
             <CardHeader>
               <CardTitle>Product Description</CardTitle>
@@ -269,7 +167,7 @@ const ProductDetail = () => {
             </CardHeader>
             <CardContent>
               <div className="prose max-w-none">
-                {product.description.split('\n\n').map((paragraph, idx) => (
+                {product.description?.split('\n\n').map((paragraph, idx) => (
                   <p key={idx} className="mb-4">{paragraph}</p>
                 ))}
               </div>

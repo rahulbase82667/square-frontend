@@ -1,4 +1,3 @@
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -8,17 +7,8 @@ import PlatformBadge from "@/components/PlatformBadge";
 import StatusBadge from "./StatusBadge";
 import ProductTableActions from "./ProductTableActions";
 import { useToast } from "@/hooks/use-toast";
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  image: string;
-  price: number;
-  inventory: number;
-  status: string;
-  platforms: string[];
-}
+import { useNavigate } from "react-router-dom";
+import { Product } from "@/types/product";
 
 interface ProductRowProps {
   product: Product;
@@ -27,6 +17,7 @@ interface ProductRowProps {
 
 const ProductRow = ({ product, onSelect }: ProductRowProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -36,11 +27,18 @@ const ProductRow = ({ product, onSelect }: ProductRowProps) => {
     });
   };
 
+  const handleRowClick = () => {
+    // Navigate to product detail page
+    navigate(`/products/${product.id}`);
+    // Also trigger the onSelect for the preview if needed
+    onSelect(product);
+  };
+
   return (
     <TableRow 
       key={product.id}
       className="cursor-pointer hover:bg-muted/50"
-      onClick={() => onSelect(product)}
+      onClick={handleRowClick}
     >
       <TableCell>
         <div className="flex items-center gap-3">
