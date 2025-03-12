@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -6,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from 'lucide-react';
 import { exchangeCodeForToken } from '@/utils/platformAuth';
+import { Platform, PlatformCredentials } from '@/types/platform';
 
 const OAuthCallback = () => {
   const [searchParams] = useSearchParams();
@@ -70,14 +70,14 @@ const OAuthCallback = () => {
 
     // In a real implementation, this would be a server-side API call
     // For demo purposes, we're simulating the token exchange
-    const mockPlatform = {
+    const mockPlatform: Platform = {
       id: finalPlatformId,
       name: findPlatformName(finalPlatformId),
       tokenUrl: 'https://api.example.com/oauth/token',
       description: '',
       icon: '',
-      status: 'not_connected' as const,
-      requiredCredentials: ['accessToken', 'refreshToken'],
+      status: 'not_connected',
+      requiredCredentials: ['accessToken', 'refreshToken'] as (keyof PlatformCredentials)[],
     };
 
     const processOAuth = async () => {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -139,26 +138,20 @@ const IntegrationsPage = () => {
 
   // Initialize platforms and check for existing connections
   useEffect(() => {
-    const updatedPlatforms = availablePlatforms.map(platform => {
-      const isConnected = validateCredentials(platform.id);
-      return {
-        ...platform,
-        status: isConnected ? 'connected' : 'not_connected',
-        lastSync: isConnected ? 'Not synced yet' : undefined
-      };
-    });
+    const updatedPlatforms = availablePlatforms.map(platform => ({
+      ...platform,
+      status: validateCredentials(platform.id) ? 'connected' as const : 'not_connected' as const,
+      lastSync: validateCredentials(platform.id) ? 'Not synced yet' : undefined
+    }));
     
     setPlatforms(updatedPlatforms);
   }, []);
-  
-  const connectedPlatforms = platforms.filter(p => p.status === 'connected');
-  const notConnectedPlatforms = platforms.filter(p => p.status === 'not_connected');
-  
+
   const handleDisconnect = (platformId: string) => {
     setPlatforms(prev => 
       prev.map(platform => 
         platform.id === platformId 
-          ? { ...platform, status: 'not_connected', lastSync: undefined }
+          ? { ...platform, status: 'not_connected' as const, lastSync: undefined }
           : platform
       )
     );
@@ -173,7 +166,7 @@ const IntegrationsPage = () => {
     setPlatforms(prev => 
       prev.map(platform => 
         platform.id === platformId 
-          ? { ...platform, status: 'connected', lastSync: 'Not synced yet' }
+          ? { ...platform, status: 'connected' as const, lastSync: 'Not synced yet' }
           : platform
       )
     );
@@ -190,6 +183,9 @@ const IntegrationsPage = () => {
       )
     );
   };
+  
+  const connectedPlatforms = platforms.filter(p => p.status === 'connected');
+  const notConnectedPlatforms = platforms.filter(p => p.status === 'not_connected');
   
   const displayPlatforms = activeTab === 'all' 
     ? platforms 
