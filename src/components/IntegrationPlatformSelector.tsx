@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { validateCredentials } from "@/utils/platformAuth";
 
 interface IntegrationPlatform {
   id: string;
@@ -29,13 +30,13 @@ const IntegrationPlatformSelector = ({
     { id: 'instagram', name: 'Instagram Shop', icon: '📸', connected: false },
   ]);
   
-  // Check localStorage for connected platforms
+  // Check for connected platforms
   useEffect(() => {
     const updatedPlatforms = availablePlatforms.map(platform => {
-      const credentials = localStorage.getItem(`${platform.id}_credentials`);
+      const isConnected = validateCredentials(platform.id);
       return {
         ...platform,
-        connected: !!credentials
+        connected: isConnected
       };
     });
     

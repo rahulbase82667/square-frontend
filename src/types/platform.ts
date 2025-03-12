@@ -21,4 +21,24 @@ export interface Platform {
   tokenUrl?: string; // OAuth token endpoint URL
   scopes?: string[]; // Required OAuth scopes
   redirectUri?: string; // OAuth redirect URI
+  refreshCredentials?: boolean; // Whether platform supports token refresh
+  webhookSupport?: boolean; // Whether platform supports webhooks for real-time updates
+}
+
+export interface SyncResult {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  details?: {
+    itemsSynced?: number;
+    itemsFailed?: number;
+    errors?: string[];
+  };
+}
+
+export interface PlatformSyncConfig {
+  autoSync: boolean; // Whether to automatically sync on schedule
+  syncInterval: number; // Sync interval in minutes
+  syncDirection: 'import' | 'export' | 'bidirectional'; // Sync direction
+  lastSyncStatus?: SyncResult; // Result of the last sync operation
 }

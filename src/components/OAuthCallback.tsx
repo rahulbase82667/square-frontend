@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from 'lucide-react';
+import { exchangeCodeForToken } from '@/utils/platformAuth';
 
 const OAuthCallback = () => {
   const [searchParams] = useSearchParams();
@@ -12,24 +13,26 @@ const OAuthCallback = () => {
   const { toast } = useToast();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [platformName, setPlatformName] = useState<string>('');
+  const [platformId, setPlatformId] = useState<string>('');
 
   useEffect(() => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const error = searchParams.get('error');
-    const platformId = searchParams.get('platform') || '';
-
-    // For demo purposes, extract platformId from state
-    // In a real implementation, this would come from the state parameter
+    const platformParam = searchParams.get('platform') || '';
+    
+    // In a real implementation, we would validate the state parameter
+    // to protect against CSRF attacks
+    
+    // Extract platform ID from state or use the explicit platform param
     const parts = state?.split('_') || [];
     const extractedPlatformId = parts.length > 0 ? parts[0] : '';
+    const finalPlatformId = platformParam || extractedPlatformId;
     
-    // Use either the explicit platform param or try to extract from state
-    const finalPlatformId = platformId || extractedPlatformId;
+    setPlatformId(finalPlatformId);
     
     const findPlatformName = (id: string) => {
       // This is a simple demo implementation
-      // In a real app, you would fetch this from your state or make an API call
       const platformMap: Record<string, string> = {
         'etsy': 'Etsy',
         'tiktok': 'TikTok Shop',
@@ -65,25 +68,27 @@ const OAuthCallback = () => {
       return;
     }
 
-    // Simulate exchanging the code for an access token
-    // In a real implementation, this would be an API call to your backend
-    setTimeout(() => {
-      // Simulate successful token exchange
-      if (code.length > 5) {
+    // In a real implementation, this would be a server-side API call
+    // For demo purposes, we're simulating the token exchange
+    const mockPlatform = {
+      id: finalPlatformId,
+      name: findPlatformName(finalPlatformId),
+      tokenUrl: 'https://api.example.com/oauth/token',
+      description: '',
+      icon: '',
+      status: 'not_connected' as const,
+      requiredCredentials: ['accessToken', 'refreshToken'],
+    };
+
+    const processOAuth = async () => {
+      try {
+        await exchangeCodeForToken(mockPlatform, code);
         setStatus('success');
-        
-        // Store the mock tokens in localStorage
-        localStorage.setItem(`${finalPlatformId}_credentials`, JSON.stringify({
-          accessToken: 'mock_access_token_' + Math.random().toString(36).substring(2),
-          refreshToken: 'mock_refresh_token_' + Math.random().toString(36).substring(2),
-          expiresAt: Date.now() + 3600000 // 1 hour from now
-        }));
-        
         toast({
           title: "Connection Successful",
           description: `Successfully connected to ${platformName}!`,
         });
-      } else {
+      } catch (error) {
         setStatus('error');
         toast({
           title: "Authorization Failed",
@@ -91,8 +96,10 @@ const OAuthCallback = () => {
           variant: "destructive",
         });
       }
-    }, 2000);
-  }, [searchParams, toast]);
+    };
+
+    processOAuth();
+  }, [searchParams, toast, platformName]);
 
   const handleContinue = () => {
     navigate('/integrations');

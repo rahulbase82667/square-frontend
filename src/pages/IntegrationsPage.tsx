@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import PlatformCard from "@/components/PlatformCard";
+import { validateCredentials } from "@/utils/platformAuth";
 import type { Platform } from "../types/platform";
 
 const availablePlatforms: Platform[] = [
@@ -14,52 +15,56 @@ const availablePlatforms: Platform[] = [
     name: 'Etsy',
     description: 'Sell handmade and vintage goods on the Etsy marketplace.',
     icon: '🏪',
-    status: 'connected',
-    lastSync: '2 hours ago',
+    status: 'not_connected',
     requiredCredentials: ['accessToken', 'refreshToken'],
     authUrl: 'https://www.etsy.com/oauth/connect',
     tokenUrl: 'https://api.etsy.com/v3/public/oauth/token',
     scopes: ['listings_r', 'listings_w', 'transactions_r'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: true,
+    webhookSupport: false
   },
   { 
     id: 'tiktok',
     name: 'TikTok Shop',
     description: 'Sell directly to TikTok users through the integrated shopping feature.',
     icon: '📱',
-    status: 'connected',
-    lastSync: '1 day ago',
+    status: 'not_connected',
     requiredCredentials: ['accessToken', 'refreshToken'],
     authUrl: 'https://auth.tiktok-shops.com/oauth/authorize',
     tokenUrl: 'https://auth.tiktok-shops.com/api/v2/token',
     scopes: ['product.read', 'product.write', 'order.read'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: true,
+    webhookSupport: true
   },
   { 
     id: 'facebook',
     name: 'Facebook Marketplace',
     description: 'List products on Facebook\'s marketplace for local and shipping sales.',
     icon: '👥',
-    status: 'connected',
-    lastSync: '3 hours ago',
+    status: 'not_connected',
     requiredCredentials: ['accessToken', 'refreshToken'],
     authUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v18.0/oauth/access_token',
     scopes: ['catalog_management', 'business_management'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: true,
+    webhookSupport: true
   },
   { 
     id: 'square',
     name: 'Square',
     description: 'Sync inventory with your Square point-of-sale system and online store.',
     icon: '🔲',
-    status: 'connected',
-    lastSync: '5 hours ago',
+    status: 'not_connected',
     requiredCredentials: ['accessToken', 'refreshToken'],
     authUrl: 'https://connect.squareupsandbox.com/oauth2/authorize',
     tokenUrl: 'https://connect.squareupsandbox.com/oauth2/token',
     scopes: ['ITEMS_READ', 'ITEMS_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: true,
+    webhookSupport: true
   },
   { 
     id: 'instagram',
@@ -71,7 +76,9 @@ const availablePlatforms: Platform[] = [
     authUrl: 'https://api.instagram.com/oauth/authorize',
     tokenUrl: 'https://api.instagram.com/oauth/access_token',
     scopes: ['user_profile', 'user_media'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: false,
+    webhookSupport: false
   },
   { 
     id: 'amazon',
@@ -83,7 +90,9 @@ const availablePlatforms: Platform[] = [
     authUrl: 'https://sellercentral.amazon.com/apps/authorize/consent',
     tokenUrl: 'https://api.amazon.com/auth/o2/token',
     scopes: ['product_listing', 'order_read'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: true,
+    webhookSupport: false
   },
   { 
     id: 'shopify',
@@ -95,7 +104,9 @@ const availablePlatforms: Platform[] = [
     authUrl: 'https://accounts.shopify.com/oauth/authorize',
     tokenUrl: 'https://accounts.shopify.com/oauth/token',
     scopes: ['read_products', 'write_products', 'read_orders'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: true,
+    webhookSupport: true
   },
   { 
     id: 'ebay',
@@ -107,14 +118,30 @@ const availablePlatforms: Platform[] = [
     authUrl: 'https://auth.ebay.com/oauth2/authorize',
     tokenUrl: 'https://api.ebay.com/identity/v1/oauth2/token',
     scopes: ['https://api.ebay.com/oauth/api_scope/sell.inventory', 'https://api.ebay.com/oauth/api_scope/sell.account'],
-    redirectUri: `${window.location.origin}/oauth-callback`
+    redirectUri: `${window.location.origin}/oauth-callback`,
+    refreshCredentials: true,
+    webhookSupport: false
   },
 ];
 
 const IntegrationsPage = () => {
   const { toast } = useToast();
-  const [platforms, setPlatforms] = useState<Platform[]>(availablePlatforms);
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
+
+  // Initialize platforms and check for existing connections
+  useEffect(() => {
+    const updatedPlatforms = availablePlatforms.map(platform => {
+      const isConnected = validateCredentials(platform.id);
+      return {
+        ...platform,
+        status: isConnected ? 'connected' : 'not_connected',
+        lastSync: isConnected ? 'Not synced yet' : undefined
+      };
+    });
+    
+    setPlatforms(updatedPlatforms);
+  }, []);
   
   const connectedPlatforms = platforms.filter(p => p.status === 'connected');
   const notConnectedPlatforms = platforms.filter(p => p.status === 'not_connected');
@@ -138,43 +165,22 @@ const IntegrationsPage = () => {
     setPlatforms(prev => 
       prev.map(platform => 
         platform.id === platformId 
-          ? { ...platform, status: 'connected', lastSync: 'Just now' }
+          ? { ...platform, status: 'connected', lastSync: 'Not synced yet' }
           : platform
       )
     );
   };
   
   const handleSync = (platformId: string) => {
-    const credentials = localStorage.getItem(`${platformId}_credentials`);
-    if (!credentials) {
-      toast({
-        title: "Sync Failed",
-        description: "Platform credentials not found. Please reconnect the platform.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Synchronizing",
-      description: `Synchronizing data with the platform...`,
-    });
-    
-    // Simulate sync
-    setTimeout(() => {
-      setPlatforms(prev => 
-        prev.map(platform => 
-          platform.id === platformId 
-            ? { ...platform, lastSync: 'Just now' }
-            : platform
-        )
-      );
-      
-      toast({
-        title: "Sync Complete",
-        description: `Data has been synchronized successfully.`,
-      });
-    }, 1500);
+    // The actual sync will be handled by the PlatformCard component
+    // This just updates the UI with the new last sync time
+    setPlatforms(prev => 
+      prev.map(platform => 
+        platform.id === platformId 
+          ? { ...platform, lastSync: 'Just now' }
+          : platform
+      )
+    );
   };
   
   const displayPlatforms = activeTab === 'all' 
