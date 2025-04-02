@@ -386,7 +386,7 @@ const OAuthCallback = () => {
     const mockPlatform: Platform = {
       id: finalPlatformId,
       name: platformMap[finalPlatformId] || 'Platform',
-      tokenUrl: 'https://api.example.com/oauth/token',
+      tokenUrl: 'https://connect.squareup.com/oauth2/token',
       description: '',
       icon: '',
       status: 'not_connected',
