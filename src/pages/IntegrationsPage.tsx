@@ -58,7 +58,7 @@ const availablePlatforms: Platform[] = [
   },
   {
     id: 'square',
-    name: 'Square test',
+    name: 'Square',
     description: 'Sync inventory with your Square point-of-sale system and online store.',
     icon: '🔲',
     status: 'not_connected',
