@@ -8,10 +8,10 @@ import PlatformCard from "@/components/PlatformCard";
 import { validateCredentials } from "@/utils/platformAuth";
 import type { Platform } from "../types/platform";
 
-import { connectSquareDirectly } from '@/utils/squareApi'; 
+import { connectSquareDirectly } from '@/utils/squareApi';
 
 const availablePlatforms: Platform[] = [
-  { 
+  {
     id: 'etsy',
     name: 'Etsy',
     description: 'Sell handmade and vintage goods on the Etsy marketplace.',
@@ -26,7 +26,7 @@ const availablePlatforms: Platform[] = [
     webhookSupport: false,
     inventorySync: true
   },
-  { 
+  {
     id: 'tiktok',
     name: 'TikTok Shop',
     description: 'Sell directly to TikTok users through the integrated shopping feature.',
@@ -41,7 +41,7 @@ const availablePlatforms: Platform[] = [
     webhookSupport: true,
     inventorySync: true
   },
-  { 
+  {
     id: 'facebook',
     name: 'Facebook Marketplace',
     description: 'List products on Facebook\'s marketplace for local and shipping sales.',
@@ -56,7 +56,7 @@ const availablePlatforms: Platform[] = [
     webhookSupport: true,
     inventorySync: false
   },
-  { 
+  {
     id: 'square',
     name: 'Square test',
     description: 'Sync inventory with your Square point-of-sale system and online store.',
@@ -66,13 +66,13 @@ const availablePlatforms: Platform[] = [
     authUrl: 'https://connect.squareup.com/oauth2/authorize',
     tokenUrl: 'https://connect.squareup.com/oauth2/token',
     scopes: ['ITEMS_READ', 'ITEMS_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE'],
-    redirectUri: "http://localhost:8080/oauth-callback",
+    redirectUri: "https://square-frontend-mu.vercel.app/oauth-callback",
     // redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
     webhookSupport: true,
     inventorySync: true
   },
-  { 
+  {
     id: 'instagram',
     name: 'Instagram Shop',
     description: 'Enable shopping features on your Instagram business profile.',
@@ -87,7 +87,7 @@ const availablePlatforms: Platform[] = [
     webhookSupport: false,
     inventorySync: false
   },
-  { 
+  {
     id: 'amazon',
     name: 'Amazon',
     description: 'List products on Amazon\'s marketplace for global reach.',
@@ -102,7 +102,7 @@ const availablePlatforms: Platform[] = [
     webhookSupport: false,
     inventorySync: true
   },
-  { 
+  {
     id: 'shopify',
     name: 'Shopify',
     description: 'Sync with your Shopify store to manage inventory across channels.',
@@ -117,7 +117,7 @@ const availablePlatforms: Platform[] = [
     webhookSupport: true,
     inventorySync: true
   },
-  { 
+  {
     id: 'ebay',
     name: 'eBay',
     description: 'List products on eBay\'s auction and fixed-price marketplace.',
@@ -146,25 +146,25 @@ const IntegrationsPage = () => {
       status: validateCredentials(platform.id) ? 'connected' as const : 'not_connected' as const,
       lastSync: validateCredentials(platform.id) ? 'Not synced yet' : undefined
     }));
-    
+
     setPlatforms(updatedPlatforms);
   }, []);
 
   const handleDisconnect = (platformId: string) => {
-    setPlatforms(prev => 
-      prev.map(platform => 
-        platform.id === platformId 
+    setPlatforms(prev =>
+      prev.map(platform =>
+        platform.id === platformId
           ? { ...platform, status: 'not_connected' as const, lastSync: undefined }
           : platform
       )
     );
-    
+
     toast({
       title: "Platform Disconnected",
       description: `The platform has been disconnected successfully.`,
     });
   };
-  
+
   // const handleConnect = (platformId: string) => {
   //   setPlatforms(prev => 
   //     prev.map(platform => 
@@ -175,58 +175,58 @@ const IntegrationsPage = () => {
   //   );
   // };
 
- 
 
-const handleConnect = async (platformId: string) => {
+
+  const handleConnect = async (platformId: string) => {
     if (platformId === 'square') {
-        try {
-            const { accessToken } = await connectSquareDirectly();
-            
-            if (accessToken) {
-                setPlatforms(prev =>
-                    prev.map(platform =>
-                        platform.id === platformId
-                            ? { ...platform, status: 'connected' as const, lastSync: 'Not synced yet' }
-                            : platform
-                    )
-                );
-                toast({
-                    title: "Square Connected",
-                    description: "Square account connected successfully!",
-                });
-            }
-        } catch (error) {
-            console.error("Connection error:", error);
-            toast({
-                title: "Connection Failed",
-                description: "Failed to connect Square account.",
-                variant: "destructive"
-            });
+      try {
+        const { accessToken } = await connectSquareDirectly();
+
+        if (accessToken) {
+          setPlatforms(prev =>
+            prev.map(platform =>
+              platform.id === platformId
+                ? { ...platform, status: 'connected' as const, lastSync: 'Not synced yet' }
+                : platform
+            )
+          );
+          toast({
+            title: "Square Connected",
+            description: "Square account connected successfully!",
+          });
         }
+      } catch (error) {
+        console.error("Connection error:", error);
+        toast({
+          title: "Connection Failed",
+          description: "Failed to connect Square account.",
+          variant: "destructive"
+        });
+      }
     }
-};
+  };
 
 
-  
+
   const handleSync = (platformId: string) => {
     // The actual sync will be handled by the PlatformCard component
     // This just updates the UI with the new last sync time
-    setPlatforms(prev => 
-      prev.map(platform => 
-        platform.id === platformId 
+    setPlatforms(prev =>
+      prev.map(platform =>
+        platform.id === platformId
           ? { ...platform, lastSync: 'Just now' }
           : platform
       )
     );
   };
-  
+
   const connectedPlatforms = platforms.filter(p => p.status === 'connected');
   const notConnectedPlatforms = platforms.filter(p => p.status === 'not_connected');
-  
-  const displayPlatforms = activeTab === 'all' 
-    ? platforms 
-    : activeTab === 'connected' 
-      ? connectedPlatforms 
+
+  const displayPlatforms = activeTab === 'all'
+    ? platforms
+    : activeTab === 'connected'
+      ? connectedPlatforms
       : notConnectedPlatforms;
 
   return (
@@ -235,7 +235,7 @@ const handleConnect = async (platformId: string) => {
         <h1 className="text-2xl font-bold">Platform Integrations</h1>
         <p className="text-muted-foreground">Connect your product listings to multiple e-commerce platforms.</p>
       </div>
-      
+
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
         <div className="flex justify-between items-center">
           <TabsList>
@@ -253,11 +253,11 @@ const handleConnect = async (platformId: string) => {
             </TabsTrigger>
           </TabsList>
         </div>
-        
+
         <TabsContent value="all" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayPlatforms.map(platform => (
-              <PlatformCard 
+              <PlatformCard
                 key={platform.id}
                 platform={platform}
                 onConnect={handleConnect}
@@ -267,11 +267,11 @@ const handleConnect = async (platformId: string) => {
             ))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="connected" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayPlatforms.map(platform => (
-              <PlatformCard 
+              <PlatformCard
                 key={platform.id}
                 platform={platform}
                 onConnect={handleConnect}
@@ -279,7 +279,7 @@ const handleConnect = async (platformId: string) => {
                 onSync={handleSync}
               />
             ))}
-            
+
             {displayPlatforms.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
                 <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
@@ -287,8 +287,8 @@ const handleConnect = async (platformId: string) => {
                 <p className="text-muted-foreground mt-2 max-w-md">
                   You haven't connected any platforms yet. Connect a platform to start listing your products.
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => setActiveTab('not_connected')}
                 >
@@ -298,11 +298,11 @@ const handleConnect = async (platformId: string) => {
             )}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="not_connected" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayPlatforms.map(platform => (
-              <PlatformCard 
+              <PlatformCard
                 key={platform.id}
                 platform={platform}
                 onConnect={handleConnect}
@@ -310,7 +310,7 @@ const handleConnect = async (platformId: string) => {
                 onSync={handleSync}
               />
             ))}
-            
+
             {displayPlatforms.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
                 <Check className="h-12 w-12 text-green-500 mb-4" />
@@ -318,8 +318,8 @@ const handleConnect = async (platformId: string) => {
                 <p className="text-muted-foreground mt-2 max-w-md">
                   You've connected all available platforms. Great job!
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => setActiveTab('connected')}
                 >
