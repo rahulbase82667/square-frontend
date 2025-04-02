@@ -53,8 +53,7 @@ export const initializeOAuth = (platform: Platform): void => {
   const scope = platform.scopes?.join(' ') || '';
   
   const oauthUrl = new URL(platform.authUrl);
-  // oauthUrl.searchParams.append('client_id', import.meta.env.VITE_OAUTH_CLIENT_ID || 'DEMO_CLIENT_ID');
-  // oauthUrl.searchParams.append('redirect_uri', redirectUri);
+ 
 
   oauthUrl.searchParams.append('client_id', "sq0idp-k179M9PgyycfIe79od8WTQ");
   oauthUrl.searchParams.append('redirect_uri', "https://square-frontend-mdow04yz5-rahuls-projects-65da8552.vercel.app/oauth-callback");
