@@ -23,7 +23,7 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:3001/api/product/${id}`);
+        const res = await fetch(`https://backend-square.onrender.com/api/product/${id}`);
         const data = await res.json();
 
         if (data.success) {
@@ -51,7 +51,7 @@ const ProductDetail = () => {
         currency: "GBP"
       };
   
-      const response = await axios.post("http://localhost:3001/api/create-payment-link", payload);
+      const response = await axios.post("https://backend-square.onrender.com/api/create-payment-link", payload);
   
       const { paymentLink } = response.data;
   

@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
         secure: true,
       },
       "/api/catalog": {  // Correct proxy for your backend
-        target: "http://localhost:3001",
+        target: "https://backend-square.onrender.com",
         changeOrigin: true,
         secure: false,  // Since it's localhost
       },

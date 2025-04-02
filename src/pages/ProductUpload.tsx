@@ -107,7 +107,7 @@ const ProductUpload = () => {
 
       // ✅ Send product to Square
       const squareResponse = await axios.post(
-        'http://localhost:3001/api/catalog/object',
+        'https://backend-square.onrender.com/api/catalog/object',
         productData
       );
 
@@ -167,7 +167,7 @@ const ProductUpload = () => {
       formData.append('caption', caption);
 
       const uploadResponse = await axios.post(
-        'http://localhost:3001/api/upload-image',
+        'https://backend-square.onrender.com/api/upload-image',
         formData,
         {
           headers: {

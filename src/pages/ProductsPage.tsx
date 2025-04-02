@@ -16,7 +16,7 @@ const ProductsPage = () => {
   // ✅ Fetch products from Square API
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/catalog/list", {
+      const response = await fetch("https://backend-square.onrender.com/api/catalog/list", {
         method: "GET",
         headers: {
           Authorization: `Bearer EAAAl7wuu6ayAloKJ0uxnDTt6QX2-Sa8W7tmGSuMcADB09D4CNQgyrgBa19QG5hC`,
