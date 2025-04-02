@@ -26,6 +26,8 @@ export const PlatformOAuthConnector = ({ platform, onConnect }: PlatformOAuthCon
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  
+
   const handleInitiateOAuth = () => {
     try {
       initializeOAuth(platform);
@@ -89,7 +91,7 @@ export const PlatformOAuthConnector = ({ platform, onConnect }: PlatformOAuthCon
         Connect
       </Button>
       
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Complete {platform.name} Connection</DialogTitle>
@@ -119,7 +121,85 @@ export const PlatformOAuthConnector = ({ platform, onConnect }: PlatformOAuthCon
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 };
+
+
+
+// import { useState } from 'react';
+// import { Button } from "@/components/ui/button";
+// import { useToast } from "@/hooks/use-toast";
+// import { Plus } from 'lucide-react';
+// import type { Platform } from '@/types/platform';
+// import { initializeOAuth, storePlatformCredentials } from '@/utils/platformAuth';
+
+// interface PlatformOAuthConnectorProps {
+//   platform: Platform;
+//   onConnect: (platformId: string) => void;
+// }
+
+// export const PlatformOAuthConnector = ({ platform, onConnect }: PlatformOAuthConnectorProps) => {
+//   const [isConnecting, setIsConnecting] = useState(false);
+//   const { toast } = useToast();
+
+//   // ✅ Initiate OAuth connection
+//   const handleInitiateOAuth = async () => {
+//     setIsConnecting(true);
+//     try {
+//       await initializeOAuth(platform);
+
+//       // ✅ Simulate OAuth callback success (Remove in production)
+//       setTimeout(async () => {
+//         storePlatformCredentials(platform.id, {
+//           accessToken: 'demo_access_token',
+//           refreshToken: 'demo_refresh_token',
+//           expiresAt: Date.now() + 3600000 // 1 hour from now
+//         });
+
+//         // ✅ Update platform state
+//         platform.status = 'connected';
+//         onConnect(platform.id);
+
+//         toast({
+//           title: "Successfully Connected",
+//           description: `Connected to ${platform.name} successfully!`,
+//         });
+//       }, 2000);
+//     } catch (error) {
+//       console.error('OAuth initialization error:', error);
+//       toast({
+//         title: "Connection Error",
+//         description: "Failed to initiate the OAuth flow. Please try again.",
+//         variant: "destructive",
+//       });
+//     } finally {
+//       setIsConnecting(false);
+//     }
+//   };
+
+//   return (
+//     <>
+//       <Button
+//         variant="outline"
+//         size="sm"
+//         onClick={handleInitiateOAuth}
+//         disabled={isConnecting}
+//       >
+//         {isConnecting ? (
+//           <>
+//             <Plus className="h-4 w-4 mr-2 animate-spin" />
+//             Connecting...
+//           </>
+//         ) : (
+//           <>
+//             <Plus className="h-4 w-4 mr-2" />
+//             Connect
+//           </>
+//         )}
+//       </Button>
+//     </>
+//   );
+// };
+

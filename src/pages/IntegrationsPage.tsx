@@ -8,6 +8,8 @@ import PlatformCard from "@/components/PlatformCard";
 import { validateCredentials } from "@/utils/platformAuth";
 import type { Platform } from "../types/platform";
 
+import { connectSquareDirectly } from '@/utils/squareApi'; 
+
 const availablePlatforms: Platform[] = [
   { 
     id: 'etsy',
@@ -56,15 +58,16 @@ const availablePlatforms: Platform[] = [
   },
   { 
     id: 'square',
-    name: 'Square',
+    name: 'Square test',
     description: 'Sync inventory with your Square point-of-sale system and online store.',
     icon: '🔲',
     status: 'not_connected',
     requiredCredentials: ['accessToken', 'refreshToken'],
-    authUrl: 'https://connect.squareupsandbox.com/oauth2/authorize',
-    tokenUrl: 'https://connect.squareupsandbox.com/oauth2/token',
+    authUrl: 'https://connect.squareup.com/oauth2/authorize',
+    tokenUrl: 'https://connect.squareup.com/oauth2/token',
     scopes: ['ITEMS_READ', 'ITEMS_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE'],
-    redirectUri: `${window.location.origin}/oauth-callback`,
+    redirectUri: "http://localhost:8080/oauth-callback",
+    // redirectUri: `${window.location.origin}/oauth-callback`,
     refreshCredentials: true,
     webhookSupport: true,
     inventorySync: true
@@ -162,15 +165,48 @@ const IntegrationsPage = () => {
     });
   };
   
-  const handleConnect = (platformId: string) => {
-    setPlatforms(prev => 
-      prev.map(platform => 
-        platform.id === platformId 
-          ? { ...platform, status: 'connected' as const, lastSync: 'Not synced yet' }
-          : platform
-      )
-    );
-  };
+  // const handleConnect = (platformId: string) => {
+  //   setPlatforms(prev => 
+  //     prev.map(platform => 
+  //       platform.id === platformId 
+  //         ? { ...platform, status: 'connected' as const, lastSync: 'Not synced yet' }
+  //         : platform
+  //     )
+  //   );
+  // };
+
+ 
+
+const handleConnect = async (platformId: string) => {
+    if (platformId === 'square') {
+        try {
+            const { accessToken } = await connectSquareDirectly();
+            
+            if (accessToken) {
+                setPlatforms(prev =>
+                    prev.map(platform =>
+                        platform.id === platformId
+                            ? { ...platform, status: 'connected' as const, lastSync: 'Not synced yet' }
+                            : platform
+                    )
+                );
+                toast({
+                    title: "Square Connected",
+                    description: "Square account connected successfully!",
+                });
+            }
+        } catch (error) {
+            console.error("Connection error:", error);
+            toast({
+                title: "Connection Failed",
+                description: "Failed to connect Square account.",
+                variant: "destructive"
+            });
+        }
+    }
+};
+
+
   
   const handleSync = (platformId: string) => {
     // The actual sync will be handled by the PlatformCard component

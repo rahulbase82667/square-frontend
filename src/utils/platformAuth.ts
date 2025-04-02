@@ -1,4 +1,3 @@
-
 import { Platform, PlatformCredentials } from "@/types/platform";
 import { toast } from "@/hooks/use-toast";
 
@@ -6,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 export const storePlatformCredentials = (platformId: string, credentials: PlatformCredentials): void => {
   try {
     // In a production environment, this should use proper encryption
-    // For demo purposes, we're just storing in localStorage
+    // For demo purposes, we're just storing in loc0alStorage
     localStorage.setItem(`${platformId}_credentials`, JSON.stringify(credentials));
   } catch (error) {
     console.error("Failed to store platform credentials:", error);
@@ -54,8 +53,12 @@ export const initializeOAuth = (platform: Platform): void => {
   const scope = platform.scopes?.join(' ') || '';
   
   const oauthUrl = new URL(platform.authUrl);
-  oauthUrl.searchParams.append('client_id', import.meta.env.VITE_OAUTH_CLIENT_ID || 'DEMO_CLIENT_ID');
-  oauthUrl.searchParams.append('redirect_uri', redirectUri);
+  // oauthUrl.searchParams.append('client_id', import.meta.env.VITE_OAUTH_CLIENT_ID || 'DEMO_CLIENT_ID');
+  // oauthUrl.searchParams.append('redirect_uri', redirectUri);
+
+  oauthUrl.searchParams.append('client_id', "sq0idp-k179M9PgyycfIe79od8WTQ");
+  oauthUrl.searchParams.append('redirect_uri', "http://localhost:8080/oauth-callback");
+
   oauthUrl.searchParams.append('response_type', 'code');
   oauthUrl.searchParams.append('state', state);
   oauthUrl.searchParams.append('platform', platform.id);

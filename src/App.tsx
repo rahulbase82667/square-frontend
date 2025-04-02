@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import OAuthCallback from "./components/OAuthCallback";
+import { ProductProvider } from "./pages/ProductContext";
 
 const queryClient = new QueryClient();
 
@@ -60,16 +61,40 @@ const App = () => (
           <Routes>
             <Route path="/login/*" element={<Login />} />
             <Route path="/oauth-callback" element={<OAuthCallback />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Dashboard />} />
-              <Route path="upload" element={<ProductUpload />} />
+              <Route
+                path="upload"
+                element={
+                  <ProductProvider>
+                    <ProductUpload />
+                  </ProductProvider>
+                }
+              />
+              <Route
+                path="products"
+                element={
+                  // <ProductProvider>
+                    <ProductsPage />
+                  // </ProductProvider>
+                }
+              />
+              <Route
+                path="products/:id"
+                element={
+                  // <ProductProvider>
+                    <ProductDetail />
+                  // </ProductProvider>
+                }
+              />
               <Route path="integrations" element={<IntegrationsPage />} />
-              <Route path="products" element={<ProductsPage />} />
-              <Route path="products/:id" element={<ProductDetail />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -78,5 +103,6 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
+
 
 export default App;

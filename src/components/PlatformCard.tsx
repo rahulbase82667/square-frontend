@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,26 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
   const [isInventorySyncing, setIsInventorySyncing] = useState(false);
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
 
+  useEffect(() => {
+    const handleOAuthSuccess = (event: MessageEvent) => {
+      if (event.data?.type === 'OAUTH_SUCCESS') {
+        console.log(`OAuth success for platform: ${event.data.platformId}`);
+        
+
+        onSync(event.data.platformId);
+        window.location.reload(); 
+      }
+    };
+  
+    window.addEventListener('message', handleOAuthSuccess);
+  
+    return () => {
+      window.removeEventListener('message', handleOAuthSuccess);
+    };
+  }, []);
+  
+  
+
   const handleDisconnect = () => {
     clearPlatformCredentials(platform.id);
     onDisconnect(platform.id);
@@ -47,7 +67,7 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
           title: "Sync Complete",
           description: result.message,
         });
-        onSync(platform.id); // Update UI with new last sync time
+        onSync(platform.id); 
       } else {
         toast({
           title: "Sync Failed",
@@ -91,7 +111,7 @@ const PlatformCard = ({ platform, onConnect, onDisconnect, onSync }: PlatformCar
           title: "Inventory Sync Complete",
           description: `Updated ${result.details?.inventoryUpdated || 0} items with ${platform.name}.`,
         });
-        onSync(platform.id); // Update UI with new last sync time
+        onSync(platform.id); 
       } else {
         toast({
           title: "Inventory Sync Failed",
