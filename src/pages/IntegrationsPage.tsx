@@ -66,8 +66,9 @@ const availablePlatforms: Platform[] = [
     authUrl: 'https://connect.squareup.com/oauth2/authorize',
     tokenUrl: 'https://connect.squareup.com/oauth2/token',
     scopes: ['ITEMS_READ', 'ITEMS_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE'],
-    redirectUri: "https://square-frontend-mdow04yz5-rahuls-projects-65da8552.vercel.app/oauth-callback",
-    // redirectUri: `${window.location.origin}/oauth-callback`,
+    redirectUri: "https://square-frontend-mu.vercel.app/oauth-callback",
+    
+    // redirectUri: `${window.location.origin}/oauth-callback`,http://localhost:8080
     refreshCredentials: true,
     webhookSupport: true,
     inventorySync: true
