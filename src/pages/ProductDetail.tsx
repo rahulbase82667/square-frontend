@@ -54,7 +54,7 @@ const ProductDetail = () => {
       const response = await axios.post("https://backend-square.onrender.com/api/create-payment-link", payload);
   
       const { paymentLink } = response.data;
-  
+      
       setPaymentLink(paymentLink);
     } catch (err: any) {
       console.error("Error creating payment link:", err);

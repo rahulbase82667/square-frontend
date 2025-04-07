@@ -24,7 +24,9 @@ import { useProducts } from "./ProductContext";
 
 const ProductUpload = () => {
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  // const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+
   const [objectId, setObjectId] = useState<string | null>(null);
   const [productName, setProductName] = useState<string>("");
   const [productDescription, setProductDescription] = useState<string>("");
@@ -61,12 +63,12 @@ const ProductUpload = () => {
   };
 
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-    }
-  };
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setImageFiles(file);
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,10 +132,10 @@ const ProductUpload = () => {
         });
 
 
-        if (imageFile) {
+        if (imageFiles) {
           console.log('Waiting for 3 seconds before uploading the image...');
           console.log('Triggering image upload...');
-          uploadImage(objectId, name, 'Image caption', imageFile);
+          uploadImages(objectId, name, 'Image caption', imageFiles);
 
         }
       }
@@ -153,52 +155,101 @@ const ProductUpload = () => {
 
 
 
-  const uploadImage = async (
+  // const uploadImage = async (
+  //   objectId: string,
+  //   name: string,
+  //   caption: string,
+  //   file: File
+  // ) => {
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('image', file);
+  //     formData.append('objectId', objectId);
+  //     formData.append('name', name);
+  //     formData.append('caption', caption);
+
+  //     const uploadResponse = await axios.post(
+  //       'https://backend-square.onrender.com/api/upload-image',
+  //       formData,
+  //       {
+  //         headers: {
+  //           'Content-Type': 'multipart/form-data',
+  //           Authorization: `Bearer ${SQUARE_IMAGE_ACCESS_TOKEN}`,
+  //         },
+  //       }
+  //     );
+
+  //     console.log('Image upload response:', uploadResponse);
+
+  //     if (uploadResponse.status === 200) {
+  //       toast({
+  //         title: 'Image Uploaded',
+  //         description: 'Product image uploaded successfully.',
+  //       });
+  //     }
+  //   } catch (uploadError: any) {
+  //     console.error('Error uploading image:', uploadError?.response?.data || uploadError);
+
+  //     toast({
+  //       title: 'Image Upload Failed',
+  //       description:
+  //         uploadError?.response?.data?.errors?.[0]?.detail ||
+  //         'There was an error uploading the product image.',
+  //       variant: 'destructive',
+  //     });
+  //   }
+  // };
+
+  const uploadImages = async (
     objectId: string,
     name: string,
     caption: string,
-    file: File
+    files: File[]
   ) => {
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('objectId', objectId);
-      formData.append('name', name);
-      formData.append('caption', caption);
-
-      const uploadResponse = await axios.post(
-        'https://backend-square.onrender.com/api/upload-image',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${SQUARE_IMAGE_ACCESS_TOKEN}`,
-          },
-        }
-      );
-
-      console.log('Image upload response:', uploadResponse);
-
-      if (uploadResponse.status === 200) {
+    for (const file of files) {
+      if (file.size > 15 * 1024 * 1024) {
+        toast({
+          title: 'Image Too Large',
+          description: `${file.name} exceeds 15MB limit and was skipped.`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+  
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('objectId', objectId);
+        formData.append('name', name);
+        formData.append('caption', caption);
+  
+        const uploadResponse = await axios.post(
+          'https://backend-square.onrender.com/api/upload-image',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${SQUARE_IMAGE_ACCESS_TOKEN}`,
+            },
+          }
+        );
+  
         toast({
           title: 'Image Uploaded',
-          description: 'Product image uploaded successfully.',
+          description: `Image ${file.name} uploaded successfully.`,
+        });
+      } catch (uploadError: any) {
+        console.error(`Error uploading ${file.name}:`, uploadError?.response?.data || uploadError);
+  
+        toast({
+          title: 'Image Upload Failed',
+          description: `Failed to upload ${file.name}.`,
+          variant: 'destructive',
         });
       }
-    } catch (uploadError: any) {
-      console.error('Error uploading image:', uploadError?.response?.data || uploadError);
-
-      toast({
-        title: 'Image Upload Failed',
-        description:
-          uploadError?.response?.data?.errors?.[0]?.detail ||
-          'There was an error uploading the product image.',
-        variant: 'destructive',
-      });
     }
   };
-
- 
+  
 
 
 
@@ -299,21 +350,48 @@ const ProductUpload = () => {
                 <CardDescription>Add multiple high-quality images of your product</CardDescription>
               </CardHeader>
               <CardContent>
-                {/* <ImageUploader
-        objectId={objectId}
-        name={productName}
-        description={productDescription}
-        onFileSelect={setImageFile}
-      /> */}
+                <div className="space-y-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setImageFiles((prev) => [...prev, ...files]);
+                    }}
+                  />
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+{imageFiles.length > 0 && (
+  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    {imageFiles.map((file, index) => {
+      const imageUrl = URL.createObjectURL(file);
+      return (
+        <div key={index} className="relative group">
+          <img
+            src={imageUrl}
+            alt={`Preview ${index}`}
+            className="rounded-md w-full h-32 object-cover border"
+            onLoad={() => URL.revokeObjectURL(imageUrl)} // ✅ Revoke after loading
+          />
+          <button
+            type="button"
+            className="absolute top-1 right-1 bg-white/80 text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+            onClick={() =>
+              setImageFiles((prev) => prev.filter((_, i) => i !== index))
+            }
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      );
+    })}
+  </div>
+)}
 
+                </div>
               </CardContent>
             </Card>
+
           </div>
 
           <div className="md:col-span-1 space-y-6">
