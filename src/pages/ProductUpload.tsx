@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Buffer } from 'buffer';
-// const SQUARE_IMAGE_TOKEN = "EAAAl3UM2C_ITayaoynZgSdiFQKNiCxjiR9JphDTdSFpQabsL9bQaRbcaDG6GnrF";
+
 const SQUARE_IMAGE_ACCESS_TOKEN = "EAAAlzgK0JQUthQ993_EIKGXOeI9EJv-fgKcsbF4prmpZ4MB1gTOChj9TGbevhdl";
 const SQUARE_ACCESS_TOKEN = "EAAAl3UM2C_ITayaoynZgSdiFQKNiCxjiR9JphDTdSFpQabsL9bQaRbcaDG6GnrF";
 import {
