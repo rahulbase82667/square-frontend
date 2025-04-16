@@ -34,7 +34,7 @@ const ProductTableActions = ({ productId, sku }: ProductTableActionsProps) => {
     });
   };
 
- 
+//test
 
 const deleteProduct = async (productId: string) => {
   if (!window.confirm("Are you sure you want to delete this product?")) return;
