@@ -56,7 +56,7 @@ export const initializeOAuth = (platform: Platform): void => {
  
 
   oauthUrl.searchParams.append('client_id', "sq0idp-k179M9PgyycfIe79od8WTQ");
-  oauthUrl.searchParams.append('redirect_uri', "https://square-frontend-mu.vercel.app/oauth-callback");
+  oauthUrl.searchParams.append('redirect_uri', "https://subdomain.adalondontrading.store/oauth-callback");
 
   oauthUrl.searchParams.append('response_type', 'code');
   oauthUrl.searchParams.append('state', state);
