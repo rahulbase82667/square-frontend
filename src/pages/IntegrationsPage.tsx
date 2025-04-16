@@ -66,7 +66,7 @@ const availablePlatforms: Platform[] = [
     authUrl: 'https://connect.squareup.com/oauth2/authorize',
     tokenUrl: 'https://connect.squareup.com/oauth2/token',
     scopes: ['ITEMS_READ', 'ITEMS_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE'],
-    redirectUri: "https://square-frontend-mu.vercel.app/oauth-callback",
+    redirectUri: "https://subdomain.adalondontrading.store/oauth-callback",
     
     // redirectUri: `${window.location.origin}/oauth-callback`,http://localhost:8080
     refreshCredentials: true,
